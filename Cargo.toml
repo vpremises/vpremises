@@ -1,0 +1,32 @@
+[workspace]
+members = ["."]
+resolver = "2"
+
+[package]
+exclude = ["/registration/**", "/state/**", "/.local/**", "/.state/**", "/.data/**", "/secrets/**", "/credentials/**", "/.env", "/.env.production", "/.env.local", "/*.tgz", "/*.tar.gz", "/*.tar", "/*.zip", "/*.whl", "/*.crate", "/.ruff_cache/**", "/.mypy_cache/**", "/.tox/**", "/.nox/**", "/.hypothesis/**", "/.coverage", "/.coverage.*", "/htmlcov/**", "/lcov.info", "/junit.xml", "/*.profraw", "/*.profdata", "/*.egg-info/**", "/target/**", "/node_modules/**", "/dist/**", "/build/**", "/.cache/**", "/.pytest_cache/**", "/coverage/**"]
+name = "vpremises"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.97"
+license = "Apache-2.0"
+description = "Bounded, metadata-only local filesystem observer"
+readme = "README.md"
+publish = false
+
+[package.metadata.vpremises]
+boundary = "metadata-observation-and-mounted-report-acquisition"
+network_access = false
+external_actions = false
+follow_symlinks = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.10"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
