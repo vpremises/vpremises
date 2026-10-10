@@ -15,6 +15,8 @@ while IFS=$'\t' read -r name repository revision; do
     git -C "$checkout" checkout -q --detach FETCH_HEAD
     [[ "$(git -C "$checkout" rev-parse HEAD)" == "$revision" ]] || exit 1
     if [[ -n "${CARGO_AUDIT_BIN:-}" ]]; then
+        # Populate every pinned registry entry before offline yank checks.
+        cargo fetch --locked --manifest-path "$checkout/Cargo.toml"
         "$CARGO_AUDIT_BIN" audit --no-fetch --deny warnings --file "$checkout/Cargo.lock"
     fi
     if [[ "$name" == zixcel-repository-security ]]; then
@@ -57,7 +59,7 @@ while IFS=$'\t' read -r name repository revision; do
 done < <(jq -r '.sources[]|[.name,.repository,.revision]|@tsv' "$sources")
 # Security collectors are built from this product's own reviewed workspace.
 for name in crowsi-host-network-sensor crowsi-boundary-monitor; do
-    cargo build --locked --release --target x86_64-unknown-linux-gnu --bin "$name"
+    cargo build --locked --release --target x86_64-unknown-linux-gnu -p "$name" --bin "$name"
     install -m 0755 "$CARGO_TARGET_DIR/x86_64-unknown-linux-gnu/release/$name" "$stage/tools/$name"
     notice="$stage/licenses/collectors/$name"
     mkdir -p "$notice"
