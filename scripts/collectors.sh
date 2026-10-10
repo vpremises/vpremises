@@ -22,7 +22,7 @@ while IFS=$'\t' read -r name repository revision; do
         install -m 755 "$stage/engine/gitleaks" "$stage/tools/gitleaks"
         mkdir "$stage/licenses/collectors/gitleaks"
         cp "$stage/engine/LICENSE" "$stage/engine/Go-runtime-LICENSE" "$stage/licenses/collectors/gitleaks/"
-        cp "$stage/engine/go.mod" "$stage/gitleaks.go.mod"
+        cp -r "$stage/engine/licenses" "$stage/licenses/collectors/gitleaks/dependencies"
         cp "$stage/engine/gitleaks_8.30.1_hardened_linux_x64.tar.gz" "$stage/engine.tgz"
         jq -s '{scanner:.[0].config.scanner_version,database:.[0].config.db,
             database_last_modified:.[0].config.db_last_modified,
@@ -58,8 +58,6 @@ done < <(jq -r '.sources[]|[.name,.repository,.revision]|@tsv' "$sources")
 hash=$(sha256sum "$stage/tools/gitleaks" | cut -d ' ' -f1)
 [[ "$hash" == "$(jq -r '.gitleaks.binary_sha256' "$sources")" ]] || exit 1
 printf '%s  %s\n' "$(jq -r '.gitleaks.archive_sha256' "$sources")" "$stage/engine.tgz" | sha256sum -c --strict
-bash scripts/gitleaks-notices.sh "$stage/licenses/collectors/gitleaks" "$sources" "$stage/gitleaks.go.mod"
-rm "$stage/gitleaks.go.mod"
 jq --arg sha "$hash" --slurpfile sources "$sources" \
     '.tools.gitleaks={repository:"gitleaks/gitleaks",revision:$sources[0].gitleaks.revision,version:$sources[0].gitleaks.version,sha256:$sha}' \
     "$manifest" > "$manifest.next"
