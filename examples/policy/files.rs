@@ -9,6 +9,12 @@ pub fn check_tree(root: &Path) {
         let kind = entry.file_type().expect("source type");
         assert!(!kind.is_symlink(), "maintained sources cannot be symlinks");
         if kind.is_dir() {
+            if ["target", "dist", "node_modules", ".git"]
+                .iter()
+                .any(|name| entry.file_name() == *name)
+            {
+                continue;
+            }
             check_tree(&entry.path());
         } else if entry.path().extension().is_some_and(|value| value == "rs") {
             let source = fs::read_to_string(entry.path()).expect("UTF-8 Rust source");

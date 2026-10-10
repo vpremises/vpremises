@@ -21,6 +21,7 @@ fn main() {
     files::check_tree(std::path::Path::new("src"));
     files::check_tree(std::path::Path::new("tests"));
     files::check_tree(std::path::Path::new("examples"));
+    files::check_tree(std::path::Path::new("crates"));
     let output = Command::new("git")
         .args(["ls-files", "-z"])
         .output()
