@@ -5,9 +5,7 @@ output=$1
 pins=$2
 temporary=$(mktemp -d "$RUNNER_TEMP/vpremises-notices.XXXXXX")
 trap 'rm -rf -- "$temporary"' EXIT
-revision=$(jq -r '.gitleaks.revision' "$pins")
-curl --disable --fail --silent --show-error --location --proto '=https' --proto-redir '=https' --max-time 120 \
-    "https://raw.githubusercontent.com/gitleaks/gitleaks/$revision/go.mod" -o "$temporary/go.mod"
+cp "$3" "$temporary/go.mod"
 printf '%s  %s\n' "$(jq -r '.gitleaks.go_mod_sha256' "$pins")" "$temporary/go.mod" | sha256sum -c --strict
 cp "$temporary/go.mod" "$output/go.mod"
 index=0
