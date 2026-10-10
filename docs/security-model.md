@@ -89,3 +89,15 @@ mutable pathnames for enumeration. At most 256 pending directory descriptors are
 retained per walk; wider pending trees become incomplete and should be split into
 narrower explicit roots. This prevents descriptor exhaustion, but does not create
 an atomic filesystem snapshot or detect every change between separate invocations.
+
+## Build-time dependency inspection
+
+CI checks all Rust lockfiles against current RustSec advisories with warnings
+rejected. The bundled Gitleaks engine retains reviewed upstream detector source
+with patched Go/module versions. Its upstream tests and binary package/symbol
+inspection run before packaging. Linker symbols remain available so the scanner
+cannot silently fall back to approximate whole-module results on stripped binaries.
+The module-only OpenPGP notice is retained: those deprecated packages are absent
+from the engine's imports and linked symbols. No advisory ID is ignored.
+These build checks apply to distributed tools, not every application under a
+selected audit root. Runtime directory inspection remains disclosure inspection.

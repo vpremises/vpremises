@@ -17,6 +17,20 @@ while IFS=$'\t' read -r name repository revision; do
     if [[ -n "${CARGO_AUDIT_BIN:-}" ]]; then
         "$CARGO_AUDIT_BIN" audit --no-fetch --deny warnings --file "$checkout/Cargo.lock"
     fi
+    if [[ "$name" == zixcel-repository-security ]]; then
+        bash "$checkout/scripts/build-gitleaks.sh" "$stage/engine"
+        install -m 755 "$stage/engine/gitleaks" "$stage/tools/gitleaks"
+        mkdir "$stage/licenses/collectors/gitleaks"
+        cp "$stage/engine/LICENSE" "$stage/engine/Go-runtime-LICENSE" "$stage/licenses/collectors/gitleaks/"
+        cp "$stage/engine/go.mod" "$stage/gitleaks.go.mod"
+        cp "$stage/engine/gitleaks_8.30.1_hardened_linux_x64.tar.gz" "$stage/engine.tgz"
+        jq -s '{scanner:.[0].config.scanner_version,database:.[0].config.db,
+            database_last_modified:.[0].config.db_last_modified,
+            affected_compiled_packages:([.[]|select(.finding.trace[0].package)]|length),
+            module_notices:([.[]|select(.finding and (.finding.trace[0].package==null))|.finding.osv]|unique)}' \
+            "$stage/engine/vulnerabilities.jsonl" > "$stage/licenses/collectors/gitleaks/ENGINE-SECURITY.json"
+        rm -rf -- "$stage/engine"
+    fi
     # Use each helper's lockfile and reviewed toolchain; no shared workspace paths.
     (cd "$checkout" && cargo build --locked --release --target x86_64-unknown-linux-gnu --bin "$name")
     install -m 0755 "$CARGO_TARGET_DIR/x86_64-unknown-linux-gnu/release/$name" "$stage/tools/$name"
@@ -41,18 +55,11 @@ while IFS=$'\t' read -r name repository revision; do
     mv "$manifest.next" "$manifest"
     rm -rf -- "$checkout"
 done < <(jq -r '.sources[]|[.name,.repository,.revision]|@tsv' "$sources")
-archive="$stage/gitleaks.tgz"
-url=$(jq -r '.gitleaks.url' "$sources")
-curl --disable --fail --silent --show-error --location --proto '=https' --proto-redir '=https' --max-time 120 --max-filesize 67108864 "$url" -o "$archive"
-printf '%s  %s\n' "$(jq -r '.gitleaks.archive_sha256' "$sources")" "$archive" | sha256sum -c --strict
-tar -xOzf "$archive" gitleaks > "$stage/tools/gitleaks"
-chmod 755 "$stage/tools/gitleaks"
 hash=$(sha256sum "$stage/tools/gitleaks" | cut -d ' ' -f1)
 [[ "$hash" == "$(jq -r '.gitleaks.binary_sha256' "$sources")" ]] || exit 1
-mkdir "$stage/licenses/collectors/gitleaks"
-tar -xOzf "$archive" LICENSE > "$stage/licenses/collectors/gitleaks/LICENSE"
-rm "$archive"
-bash scripts/gitleaks-notices.sh "$stage/licenses/collectors/gitleaks" "$sources"
+printf '%s  %s\n' "$(jq -r '.gitleaks.archive_sha256' "$sources")" "$stage/engine.tgz" | sha256sum -c --strict
+bash scripts/gitleaks-notices.sh "$stage/licenses/collectors/gitleaks" "$sources" "$stage/gitleaks.go.mod"
+rm "$stage/gitleaks.go.mod"
 jq --arg sha "$hash" --slurpfile sources "$sources" \
     '.tools.gitleaks={repository:"gitleaks/gitleaks",revision:$sources[0].gitleaks.revision,version:$sources[0].gitleaks.version,sha256:$sha}' \
     "$manifest" > "$manifest.next"
