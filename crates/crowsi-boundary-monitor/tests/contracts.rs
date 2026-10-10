@@ -32,7 +32,7 @@ fn management_exposure_requires_attention() {
 #[test]
 fn parser_enforces_the_schema_label_bound() {
     let mut value: serde_json::Value = serde_json::from_slice(SAMPLE).expect("valid JSON");
-    value["environments"][0]["label"] = serde_json::Value::String("長".repeat(129));
+    value["environments"][0]["label"] = serde_json::Value::String("\u{9577}".repeat(129));
     let source = serde_json::to_vec(&value).expect("serializable JSON");
     assert!(parse_input(&source).is_err());
 }

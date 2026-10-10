@@ -79,3 +79,8 @@ cargo test --locked --workspace --all-targets
 Use the resulting metadata with an explicit baseline in the mounted-directory
 audit configuration. Keep missing or stale evidence as incomplete. Credential
 storage and policy enforcement belong to separate credential/control products.
+
+The repository source-policy check covers the root application and every
+maintained workspace member: Rust files are English ASCII and at most 120 lines.
+Protocol validation, observation, state transitions and regression cases live
+in separate modules; this source layout does not merge their trust boundaries.
