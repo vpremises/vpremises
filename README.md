@@ -5,12 +5,14 @@ Reports are local JSON or JSONL; no account, dashboard or remote upload is requi
 
 ## Capabilities
 
+- Check OSS community documents, license metadata, Git exclusions and npm/Cargo archives.
 - Bound metadata traversal of explicitly selected mounted roots.
 - Inspect file contents, names and archives through a pinned local Zixcel/Gitleaks adapter.
 - Include ignored, hidden and non-Git files in directory content inspection.
 - Connect Crowsi's Linux network sensor to an explicit baseline.
 - Evaluate a pinned, fresh operator-supplied isolation observation with Crowsi.
-- Emit only aggregate counters, stable reason codes and evidence hashes.
+- Emit aggregate counters, stable reason codes and evidence hashes for endpoint audits.
+- Include relative file locations in OSS policy receipts, with no matched contents.
 - Preserve incomplete checks, unsupported files and collector failures.
 
 Run the Linux executable inside WSL. A mount such as `/mnt/c/Inspection/Selected`
@@ -51,7 +53,7 @@ uses the bundled pinned Linux collectors with externally configured runtime inpu
 No native Windows executable is built or distributed. Linux requires glibc
 compatible with Ubuntu 24.04. Preserve license notices when redistributing.
 
-[Audit setup](docs/audit.md) · [Usage](docs/getting-started.md) ·
+[OSS inspection](docs/oss.md) · [Audit setup](docs/audit.md) · [Usage](docs/getting-started.md) ·
 [Report format](docs/report-format.md) · [Distribution](docs/distribution.md) ·
 [Library interfaces](docs/interface-reference.md) · [Contributing](CONTRIBUTING.md) ·
 [Security](SECURITY.md) · [License](LICENSE) · [Notices](NOTICE)

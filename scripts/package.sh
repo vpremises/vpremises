@@ -26,7 +26,7 @@ engine_archive="$output/gitleaks_8.30.1_hardened_linux_x64.tar.gz"
 mv "$stage/engine.tgz" "$engine_archive"
 sha256sum "$engine_archive" | cut -d ' ' -f1 > "$engine_archive.sha256"
 mkdir "$stage/examples"
-cp examples/audit.mounted.json "$stage/examples/"
+cp examples/audit.mounted.json examples/oss.gitleaks.toml "$stage/examples/"
 mkdir "$stage/scripts"
 cp scripts/run-audit.sh "$stage/scripts/"
 jq -n --arg package vpremises-security --arg version "$version" --arg target "$target" \

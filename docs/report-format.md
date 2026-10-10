@@ -31,3 +31,11 @@ errors. Opaque environment/root IDs must not themselves contain personal names.
 Evidence digests identify private collector results, not signed attestations.
 Definitions, input source identity and scoped coverage remain important when comparing
 reports. Do not turn a missing check or unknown contract version into success.
+
+## OSS receipts
+
+The `oss` subcommands use [the OSS gate schema](../schemas/oss-report.schema.json),
+with relative filenames and manifest-field locations. They do not share the
+path-free endpoint report contract above. Invalid inputs use
+`vpremises-security/oss-error/v1` with a stable code and incomplete status.
+See [OSS inspection](oss.md) for scope and exit semantics.
