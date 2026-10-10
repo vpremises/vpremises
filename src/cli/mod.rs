@@ -2,6 +2,7 @@
 mod audit;
 mod doctor;
 mod file_input;
+mod oss;
 mod output;
 mod report_request;
 mod workspace;
@@ -42,6 +43,7 @@ pub(super) fn main() -> ExitCode {
 
 fn run(arguments: &[String]) -> Result<Value, (u8, Value)> {
     match arguments {
+        [command, rest @ ..] if command == "oss" => oss::run(rest),
         [command] if command == "doctor" => Ok(doctor::doctor()),
         [command, directory, root] if command == "init" => {
             audit::initialize(Path::new(directory), Path::new(root))

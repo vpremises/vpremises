@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "license": "Apache-2.0",
+  "allowed_vendor_archives": [],
+  "allowed_source_files": [],
+  "rust_source": {
+    "max_lines": 120,
+    "english_ascii": true,
+    "directories": [
+      "src",
+      "tests",
+      "examples",
+      "crates"
+    ]
+  },
+  "forbidden_extensions": [
+    ".py",
+    ".pyc",
+    ".zip",
+    ".crate",
+    ".tgz",
+    ".sqlite",
+    ".log"
+  ]
+}

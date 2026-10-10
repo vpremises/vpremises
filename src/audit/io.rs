@@ -33,7 +33,7 @@ impl Drop for Scratch {
     }
 }
 /// Read one physical regular file with fixed byte and change-detection bounds.
-pub(super) fn read(path: &Path, maximum: u64) -> Result<Vec<u8>, &'static str> {
+pub(crate) fn read(path: &Path, maximum: u64) -> Result<Vec<u8>, &'static str> {
     use std::os::unix::fs::MetadataExt;
     let file = open(path)?;
     let before = file.metadata().map_err(|_| "input-unavailable")?;
@@ -66,7 +66,7 @@ pub(super) fn read(path: &Path, maximum: u64) -> Result<Vec<u8>, &'static str> {
     Ok(bytes)
 }
 /// Anchor every path component below the Linux root without following links.
-pub(super) fn open(path: &Path) -> Result<File, &'static str> {
+pub(crate) fn open(path: &Path) -> Result<File, &'static str> {
     if !path.is_absolute() {
         return Err("absolute-path-required");
     }

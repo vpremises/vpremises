@@ -14,6 +14,7 @@ pub use audit::{
 mod execution;
 mod model;
 mod observer;
+pub mod oss;
 mod path_security;
 mod report;
 mod security;

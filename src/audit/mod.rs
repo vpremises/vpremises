@@ -10,6 +10,7 @@ pub(crate) mod io;
 mod load;
 pub use load::{load_audit_config, read_local_document};
 mod network;
+pub(crate) mod oss_content;
 mod process;
 mod runner;
 mod setup;
