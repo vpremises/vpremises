@@ -5,11 +5,9 @@ use vpremises::{observe, AllowedRoot, ObserverConfig};
 
 #[test]
 fn observer_config_rejects_unknown_fields() {
-    let source = include_str!("../../examples/observer.local.json").replacen(
-        "\n}",
-        ",\n  \"unexpected\": true\n}",
-        1,
-    );
+    let example = include_str!("../../examples/observer.repository.json");
+    serde_json::from_str::<ObserverConfig>(example).expect("committed example is valid");
+    let source = example.replacen("\n}", ",\n  \"unexpected\": true\n}", 1);
     assert!(serde_json::from_str::<ObserverConfig>(&source).is_err());
 }
 
