@@ -1,19 +1,17 @@
 //! Linux opens every component relative to a held descriptor with no-follow semantics.
 
 use crate::{model::ReportAcquisitionError, report::error};
-use std::{
-    fs,
-    path::{Component, Path, PathBuf},
-};
+use std::{fs, path::Path};
 
 #[cfg(target_os = "linux")]
 use std::{
     fs::OpenOptions,
     os::{fd::AsRawFd, unix::fs::OpenOptionsExt},
+    path::{Component, PathBuf},
 };
 
 #[cfg(target_os = "linux")]
-pub(super) fn beneath(
+pub(crate) fn beneath(
     canonical_root: &Path,
     relative: &Path,
 ) -> Result<fs::File, ReportAcquisitionError> {
@@ -77,6 +75,7 @@ fn descriptor_child(directory: &fs::File, name: &std::ffi::OsStr) -> PathBuf {
     PathBuf::from(format!("/proc/self/fd/{}", directory.as_raw_fd())).join(name)
 }
 
+#[cfg(target_os = "linux")]
 fn root_open_error() -> ReportAcquisitionError {
     error::create(
         "vpremises.report.root-open-failed",
@@ -85,6 +84,7 @@ fn root_open_error() -> ReportAcquisitionError {
     )
 }
 
+#[cfg(target_os = "linux")]
 fn relative_error() -> ReportAcquisitionError {
     error::create(
         "vpremises.report.relative-file-invalid",
@@ -94,7 +94,7 @@ fn relative_error() -> ReportAcquisitionError {
 }
 
 #[cfg(not(target_os = "linux"))]
-pub(super) fn beneath(
+pub(crate) fn beneath(
     _canonical_root: &Path,
     _relative: &Path,
 ) -> Result<fs::File, ReportAcquisitionError> {

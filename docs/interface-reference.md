@@ -1,4 +1,4 @@
-# vpremises interface reference
+# vpremises-security interface reference
 
 Use the [usage guide](getting-started.md) for the first steps. This reference preserves the current interface details and operational limits. Run command examples from the repository root, after preparing the exact declared dependencies and registered configuration.
 
@@ -72,7 +72,7 @@ The observation and mounted-report boundaries are independently usable:
 use vpremises::{observe, ObserverConfig};
 
 let config: ObserverConfig =
-    serde_json::from_str(include_str!("examples/observer.local.json"))?;
+    serde_json::from_str(include_str!("examples/observer.repository.json"))?;
 let report = observe(&config);
 assert_eq!(report.policy.access_mode, "metadata-only");
 # Ok::<(), Box<dyn std::error::Error>>(())

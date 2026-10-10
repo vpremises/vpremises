@@ -7,9 +7,13 @@ use std::path::PathBuf;
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct ObserverConfig {
+    /// Schema version.
     pub schema_version: String,
+    /// Roots.
     pub roots: Vec<AllowedRoot>,
+    /// Limits.
     pub limits: ObservationLimits,
+    /// Policy.
     pub policy: ObservationPolicy,
 }
 
@@ -17,7 +21,9 @@ pub struct ObserverConfig {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct AllowedRoot {
+    /// Id.
     pub id: String,
+    /// Explicitly allowed local path; excluded from observation reports.
     pub path: PathBuf,
 }
 
@@ -25,8 +31,11 @@ pub struct AllowedRoot {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct ObservationLimits {
+    /// Maximum traversal depth below each allowed root.
     pub max_depth: u32,
+    /// Maximum entries examined across all configured roots.
     pub max_entries: u64,
+    /// Maximum aggregate size of observed regular files.
     pub max_total_bytes: u64,
 }
 
@@ -34,54 +43,21 @@ pub struct ObservationLimits {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct ObservationPolicy {
+    /// Must remain true; observation does not read file contents.
     pub metadata_only: bool,
+    /// Must remain false; traversal skips linked entries.
     pub follow_symlinks: bool,
 }
 
 /// Machine-readable observer validation or traversal finding.
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
 pub struct Diagnostic {
+    /// Code.
     pub code: String,
+    /// Opaque identifier of an explicitly selected root.
     pub root_id: Option<String>,
+    /// Field.
     pub field: String,
+    /// Message.
     pub message: String,
-}
-
-/// Aggregate-only result for one observation attempt.
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct ObservationReport {
-    pub schema_version: &'static str,
-    pub ok: bool,
-    pub policy: ReportedPolicy,
-    pub totals: ObservationTotals,
-    pub roots: Vec<RootObservation>,
-    pub diagnostics: Vec<Diagnostic>,
-}
-
-/// Effective disclosure policy recorded in every result.
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct ReportedPolicy {
-    pub access_mode: &'static str,
-    pub disclosure: &'static str,
-    pub symlink_policy: &'static str,
-}
-
-/// Aggregate metadata counters that disclose no entry names.
-#[derive(Debug, Clone, Default, Serialize, PartialEq, Eq)]
-pub struct ObservationTotals {
-    pub entries_examined: u64,
-    pub directories: u64,
-    pub files: u64,
-    pub symlinks_skipped: u64,
-    pub other_entries: u64,
-    pub total_file_bytes: u64,
-    pub max_depth_reached: u32,
-}
-
-/// Completion state and counters for one opaque root ID.
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct RootObservation {
-    pub root_id: String,
-    pub complete: bool,
-    pub totals: ObservationTotals,
 }

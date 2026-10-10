@@ -1,3 +1,5 @@
+#![cfg(target_os = "linux")]
+
 //! Boundary tests reject traversal, identity mismatch, symlinks, and explicit size overflow.
 
 use crate::support::{acquire, daily_report, report_request, TempDirectory};

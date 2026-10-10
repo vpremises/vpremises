@@ -3,10 +3,15 @@
 use serde::Serialize;
 use serde_json::{json, Value};
 
-pub(super) fn emit<T: Serialize>(value: &T) {
+pub(super) fn emit<T: Serialize>(value: &T, jsonl: bool) {
     println!(
         "{}",
-        serde_json::to_string_pretty(value).expect("command output serializes")
+        if jsonl {
+            serde_json::to_string(value)
+        } else {
+            serde_json::to_string_pretty(value)
+        }
+        .expect("command output serializes")
     );
 }
 
@@ -25,6 +30,6 @@ pub(super) fn usage_error() -> Value {
         "schema_version": "vpremises.error/v1",
         "ok": false,
         "code": "vpremises.cli.usage",
-        "message": "usage: vpremises doctor | observe <config.json> | acquire-mounted-sharepoint-report <request.json>"
+        "message": "usage: vpremises-security doctor | init <new-private-directory> <absolute-root> | audit <audit.json> <environment-id> [--jsonl] | observe <config.json> | report <config.json> <environment-id> [--jsonl] | acquire-mounted-sharepoint-report <request.json>"
     })
 }

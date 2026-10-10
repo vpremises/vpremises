@@ -1,12 +1,24 @@
 //! Bounded local observation and mounted-report acquisition for vPremises.
 
 #![forbid(unsafe_code)]
+#[cfg(not(target_os = "linux"))]
+compile_error!("vpremises-security is supported only on Linux/WSL");
 
+#[cfg(target_os = "linux")]
+mod audit;
+#[cfg(target_os = "linux")]
+pub use audit::{
+    audit, initialize_bundle, load_audit_config, read_local_document, AuditConfig,
+    BoundaryCollector, Collectors, ContentCollector, NetworkCollector, Tool,
+};
 mod execution;
 mod model;
 mod observer;
+mod path_security;
 mod report;
+mod security;
 mod validation;
+pub use security::{security_report, CheckCoverage, SecurityReport};
 
 pub use execution::{
     ExecutionContractError, ExecutionControlKindV1, ExecutionControlRequestV1,

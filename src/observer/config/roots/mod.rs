@@ -5,7 +5,9 @@ use crate::{
     observer::{diagnostic, ValidatedRoot},
     validation::valid_identifier,
 };
-use std::{collections::BTreeSet, fs, path::Path};
+mod resolve;
+use resolve::resolve;
+use std::collections::BTreeSet;
 
 pub(super) fn validate(
     roots: &[AllowedRoot],
@@ -65,70 +67,5 @@ fn validate_identity(
             "$.roots[].id",
             "root ids must be unique",
         ));
-    }
-}
-
-fn resolve(root: &AllowedRoot, diagnostics: &mut Vec<Diagnostic>) -> Option<std::path::PathBuf> {
-    if !root.path.is_absolute() {
-        diagnostics.push(diagnostic::create(
-            "vpremises.root.not-absolute",
-            Some(&root.id),
-            "$.roots[].path",
-            "allowed root must be an absolute path",
-        ));
-        return None;
-    }
-    let metadata = fs::symlink_metadata(&root.path)
-        .map_err(|error| {
-            diagnostics.push(diagnostic::io(
-                "vpremises.root.unavailable",
-                &root.id,
-                "$.roots[].path",
-                &error,
-            ));
-        })
-        .ok()?;
-    if metadata.file_type().is_symlink() || !metadata.is_dir() {
-        let (code, message) = if metadata.file_type().is_symlink() {
-            (
-                "vpremises.root.symlink-forbidden",
-                "an allowed root cannot itself be a symlink",
-            )
-        } else {
-            (
-                "vpremises.root.not-directory",
-                "an allowed root must be a directory",
-            )
-        };
-        diagnostics.push(diagnostic::create(
-            code,
-            Some(&root.id),
-            "$.roots[].path",
-            message,
-        ));
-        return None;
-    }
-    let canonical = root
-        .path
-        .canonicalize()
-        .map_err(|error| {
-            diagnostics.push(diagnostic::io(
-                "vpremises.root.canonicalize-failed",
-                &root.id,
-                "$.roots[].path",
-                &error,
-            ));
-        })
-        .ok()?;
-    if canonical == Path::new("/") {
-        diagnostics.push(diagnostic::create(
-            "vpremises.root.system-root-forbidden",
-            Some(&root.id),
-            "$.roots[].path",
-            "observing the filesystem root is forbidden",
-        ));
-        None
-    } else {
-        Some(canonical)
     }
 }

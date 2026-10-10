@@ -1,26 +1,25 @@
 # Contributing
 
-Discuss substantial API or architecture changes in an issue before implementation.
-Keep changes focused, explain observable behavior, and include relevant tests and
-validation evidence. Use the package's documented interfaces and versioned dependencies.
-Application-specific composition belongs to callers.
+Keep changes scoped and explain observable behavior in a pull request. Rust source
+files, including tests and examples, must not exceed 120 lines. Split larger modules
+by responsibility into named files and directories. Document public types, fields,
+functions and errors; explain safety boundaries and non-obvious platform behavior.
+Use English documentation and comments. Preserve synthetic test fixtures and tests.
 
-Create a topic branch and open a pull request against main. Direct changes to main,
-force pushes, and deleting main are restricted. Reviewers check correctness,
-compatibility, licensing, security, and documentation. Resolve review conversations
-before merging. Maintainers may request changes or decline a contribution.
+Use the pinned Rust toolchain and an external `CARGO_TARGET_DIR`:
 
-Run the checks documented in README and the repository's security policy.
-Do not commit credentials, customer or personal data, local registration/state,
-production certificates or keys, generated archives, caches, or build outputs.
-Use synthetic fixtures with documented provenance. Report vulnerabilities privately
-as described in SECURITY.md. Passing the repository policy check does not replace
-functional testing, secret inspection, or dependency analysis.
+```sh
+cargo fmt --all -- --check
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked --all-targets
+cargo run --locked --example check-repository
+```
 
-By submitting a contribution, you confirm that you are authorized to provide it
-under the repository's applicable license. Preserve third-party notices and
-existing permissions. Contributors retain their copyrights; submission does not
-transfer ownership. Explain any new dependency and its license.
+Run native Linux/WSL CI before release. Platform-specific no-follow
+boundaries must fail closed when unsupported. Never suppress a check or remove a
+test to make CI pass. Keep dependency versions locked and preserve license notices.
 
-Follow CODE_OF_CONDUCT.md. Maintainers decide releases and compatibility policy;
-a merged pull request does not itself promise a release or support commitment.
+Do not commit credentials, machine registration, customer data, reports, caches or
+build outputs. Report vulnerabilities privately as described in SECURITY.md.
+Maintain required reviewers for release preparation. Contributions are licensed
+under Apache-2.0; contributors retain their copyrights.

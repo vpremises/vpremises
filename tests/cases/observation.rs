@@ -51,7 +51,10 @@ fn rejects_relative_and_system_roots() {
         .diagnostics
         .iter()
         .any(|item| item.code == "vpremises.root.not-absolute"));
-    let system = observe(&observer_config(Path::new("/")));
+    let root = TempDirectory::create();
+    let system = observe(&observer_config(
+        root.0.ancestors().last().expect("filesystem root"),
+    ));
     assert!(system
         .diagnostics
         .iter()
@@ -100,4 +103,18 @@ fn metadata_observation_does_not_require_file_content_access() {
     assert!(report.ok, "{:?}", report.diagnostics);
     assert_eq!(report.totals.files, 1);
     assert_eq!(report.totals.total_file_bytes, 13);
+}
+
+#[test]
+fn unicode_and_space_names_remain_private_metadata() {
+    let root = TempDirectory::create();
+    let directory = root.0.join("space \u{4e2d}");
+    fs::create_dir(&directory).expect("Unicode directory");
+    fs::write(directory.join("private.txt"), b"synthetic").expect("file");
+    let report = observe(&observer_config(&root.0));
+    assert!(report.ok);
+    assert_eq!(report.totals.files, 1);
+    let json = serde_json::to_string(&report).expect("aggregate JSON");
+    assert!(!json.contains("space \u{4e2d}"));
+    assert!(!json.contains("private.txt"));
 }
