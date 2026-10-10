@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://incident/receipt/v1",
+  "title": "Crowsi Incident Coordinator Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "receipt_jti",
+    "deployment_id",
+    "incident_id",
+    "isolation_epoch",
+    "transaction_id",
+    "target_id",
+    "requirement_id",
+    "enforcement"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://incident/receipt/v1" },
+    "receipt_jti": { "$ref": "#/$defs/identifier" },
+    "deployment_id": { "$ref": "#/$defs/identifier" },
+    "incident_id": { "$ref": "#/$defs/identifier" },
+    "isolation_epoch": { "type": "integer", "minimum": 1 },
+    "transaction_id": { "$ref": "#/$defs/identifier" },
+    "target_id": { "$ref": "#/$defs/opaque" },
+    "requirement_id": { "$ref": "#/$defs/identifier" },
+    "enforcement": {
+      "$ref": "crowsi://control/enforcement-receipt/v1"
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._:-]{0,127}$"
+    },
+    "opaque": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://incident/independent-verification/v1",
+  "title": "Crowsi Independent Verification Artifact v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "artifact_id",
+    "jti",
+    "nonce",
+    "deployment_id",
+    "incident_id",
+    "isolation_epoch",
+    "transaction_id",
+    "target_id",
+    "requirement_id",
+    "enforcement_receipt_id",
+    "enforcement_receipt_digest",
+    "observed_outcome",
+    "verifier_authority",
+    "issued_at",
+    "expires_at",
+    "signed"
+  ],
+  "properties": {
+    "schema": {
+      "const": "crowsi://incident/independent-verification/v1"
+    },
+    "artifact_id": { "$ref": "#/$defs/identifier" },
+    "jti": { "$ref": "#/$defs/identifier" },
+    "nonce": { "$ref": "#/$defs/opaque" },
+    "deployment_id": { "$ref": "#/$defs/identifier" },
+    "incident_id": { "$ref": "#/$defs/identifier" },
+    "isolation_epoch": { "type": "integer", "minimum": 1 },
+    "transaction_id": { "$ref": "#/$defs/identifier" },
+    "target_id": { "$ref": "#/$defs/opaque" },
+    "requirement_id": { "$ref": "#/$defs/identifier" },
+    "enforcement_receipt_id": { "$ref": "#/$defs/identifier" },
+    "enforcement_receipt_digest": { "$ref": "#/$defs/digest" },
+    "observed_outcome": {
+      "enum": ["applied", "not-applied", "partial", "unknown"]
+    },
+    "verifier_authority": { "$ref": "#/$defs/identifier" },
+    "issued_at": { "$ref": "#/$defs/timestamp" },
+    "expires_at": { "$ref": "#/$defs/timestamp" },
+    "signed": { "$ref": "#/$defs/signed" }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._:-]{0,127}$"
+    },
+    "opaque": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "signed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "digest", "signature"],
+      "properties": {
+        "algorithm": { "const": "ed25519" },
+        "key_id": { "$ref": "#/$defs/identifier" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      }
+    }
+  }
+}

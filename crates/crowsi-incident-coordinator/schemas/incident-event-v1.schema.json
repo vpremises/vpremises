@@ -1,0 +1,261 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://incident/event/v1",
+  "title": "Crowsi Owner-Signed Incident Event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "event_id",
+    "jti",
+    "deployment_id",
+    "incident_id",
+    "isolation_epoch",
+    "occurred_at",
+    "valid_until",
+    "owner_authority",
+    "kind",
+    "signed"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://incident/event/v1" },
+    "event_id": { "$ref": "#/$defs/identifier" },
+    "jti": { "$ref": "#/$defs/identifier" },
+    "deployment_id": { "$ref": "#/$defs/identifier" },
+    "incident_id": { "$ref": "#/$defs/identifier" },
+    "isolation_epoch": { "type": "integer", "minimum": 0 },
+    "occurred_at": { "$ref": "#/$defs/timestamp" },
+    "valid_until": { "$ref": "#/$defs/timestamp" },
+    "owner_authority": { "$ref": "#/$defs/identifier" },
+    "kind": {
+      "oneOf": [
+        { "$ref": "#/$defs/beginTriage" },
+        { "$ref": "#/$defs/requestContainment" },
+        { "$ref": "#/$defs/submitReceipt" },
+        { "$ref": "#/$defs/submitVerification" },
+        { "$ref": "#/$defs/finalizeContainment" },
+        { "$ref": "#/$defs/retryContainment" },
+        { "$ref": "#/$defs/beginEradication" },
+        { "$ref": "#/$defs/requestRecovery" },
+        { "$ref": "#/$defs/authorizeRecovery" },
+        { "$ref": "#/$defs/startRestore" },
+        { "$ref": "#/$defs/finalizeRestore" },
+        { "$ref": "#/$defs/retryRecovery" },
+        { "$ref": "#/$defs/beginMonitoring" },
+        { "$ref": "#/$defs/close" }
+      ]
+    },
+    "signed": { "$ref": "#/$defs/signed" }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._:-]{0,127}$"
+    },
+    "opaque": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "signed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "digest", "signature"],
+      "properties": {
+        "algorithm": { "const": "ed25519" },
+        "key_id": { "$ref": "#/$defs/identifier" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      }
+    },
+    "unitEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": [
+            "begin-triage",
+            "finalize-containment",
+            "begin-eradication",
+            "request-recovery",
+            "finalize-restore",
+            "retry-recovery",
+            "begin-monitoring"
+          ]
+        }
+      }
+    },
+    "beginTriage": {
+      "allOf": [
+        { "$ref": "#/$defs/unitEvent" },
+        { "properties": { "type": { "const": "begin-triage" } } }
+      ]
+    },
+    "finalizeContainment": {
+      "allOf": [
+        { "$ref": "#/$defs/unitEvent" },
+        { "properties": { "type": { "const": "finalize-containment" } } }
+      ]
+    },
+    "beginEradication": {
+      "allOf": [
+        { "$ref": "#/$defs/unitEvent" },
+        { "properties": { "type": { "const": "begin-eradication" } } }
+      ]
+    },
+    "requestRecovery": {
+      "allOf": [
+        { "$ref": "#/$defs/unitEvent" },
+        { "properties": { "type": { "const": "request-recovery" } } }
+      ]
+    },
+    "finalizeRestore": {
+      "allOf": [
+        { "$ref": "#/$defs/unitEvent" },
+        { "properties": { "type": { "const": "finalize-restore" } } }
+      ]
+    },
+    "retryRecovery": {
+      "allOf": [
+        { "$ref": "#/$defs/unitEvent" },
+        { "properties": { "type": { "const": "retry-recovery" } } }
+      ]
+    },
+    "beginMonitoring": {
+      "allOf": [
+        { "$ref": "#/$defs/unitEvent" },
+        { "properties": { "type": { "const": "begin-monitoring" } } }
+      ]
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_id",
+        "requirement_id",
+        "current_revocation_epoch",
+        "identity",
+        "intent",
+        "decision",
+        "grant"
+      ],
+      "properties": {
+        "target_id": { "$ref": "#/$defs/opaque" },
+        "requirement_id": { "$ref": "#/$defs/identifier" },
+        "current_revocation_epoch": { "type": "integer", "minimum": 0 },
+        "identity": {
+          "$ref": "crowsi://control/verified-identity-context/v1"
+        },
+        "intent": { "$ref": "crowsi://control/security-intent/v1" },
+        "decision": { "$ref": "crowsi://control/policy-decision/v1" },
+        "grant": { "$ref": "crowsi://control/enforcement-grant/v1" }
+      }
+    },
+    "authorizationList": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": { "$ref": "#/$defs/authorization" }
+    },
+    "requestContainment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "authorizations"],
+      "properties": {
+        "type": { "const": "request-containment" },
+        "authorizations": { "$ref": "#/$defs/authorizationList" }
+      }
+    },
+    "retryContainment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "authorizations"],
+      "properties": {
+        "type": { "const": "retry-containment" },
+        "authorizations": { "$ref": "#/$defs/authorizationList" }
+      }
+    },
+    "submitReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "receipt"],
+      "properties": {
+        "type": { "const": "submit-receipt" },
+        "receipt": { "$ref": "crowsi://incident/receipt/v1" }
+      }
+    },
+    "submitVerification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "verification"],
+      "properties": {
+        "type": { "const": "submit-verification" },
+        "verification": {
+          "$ref": "crowsi://incident/independent-verification/v1"
+        }
+      }
+    },
+    "recoveryApproval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approval_id",
+        "approved_at",
+        "authorizations",
+        "recovery_authorizations"
+      ],
+      "properties": {
+        "approval_id": { "$ref": "#/$defs/identifier" },
+        "approved_at": { "$ref": "#/$defs/timestamp" },
+        "authorizations": { "$ref": "#/$defs/authorizationList" },
+        "recovery_authorizations": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 256,
+          "additionalProperties": {
+            "$ref": "crowsi://control/recovery-authorization/v1"
+          }
+        }
+      }
+    },
+    "authorizeRecovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "approval"],
+      "properties": {
+        "type": { "const": "authorize-recovery" },
+        "approval": { "$ref": "#/$defs/recoveryApproval" }
+      }
+    },
+    "startRestore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "automatic"],
+      "properties": {
+        "type": { "const": "start-restore" },
+        "automatic": { "const": false }
+      }
+    },
+    "close": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "evidence"],
+      "properties": {
+        "type": { "const": "close" },
+        "evidence": { "$ref": "crowsi://incident/monitoring-evidence/v1" }
+      }
+    }
+  }
+}

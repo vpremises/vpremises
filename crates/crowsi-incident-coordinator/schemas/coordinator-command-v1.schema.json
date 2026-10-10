@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://incident/command/v1",
+  "title": "Crowsi Incident Coordinator Command v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "command_id",
+    "jti",
+    "deployment_id",
+    "incident_id",
+    "isolation_epoch",
+    "transaction_id",
+    "target_id",
+    "requirement_id",
+    "binding",
+    "pep",
+    "enforcement_grant_jti",
+    "issued_at",
+    "automatic"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://incident/command/v1" },
+    "command_id": { "$ref": "#/$defs/identifier" },
+    "jti": { "$ref": "#/$defs/identifier" },
+    "deployment_id": { "$ref": "#/$defs/identifier" },
+    "incident_id": { "$ref": "#/$defs/identifier" },
+    "isolation_epoch": { "type": "integer", "minimum": 1 },
+    "transaction_id": { "$ref": "#/$defs/identifier" },
+    "target_id": { "$ref": "#/$defs/opaque" },
+    "requirement_id": { "$ref": "#/$defs/identifier" },
+    "binding": { "$ref": "#/$defs/binding" },
+    "pep": { "$ref": "#/$defs/identifier" },
+    "enforcement_grant_jti": { "$ref": "#/$defs/identifier" },
+    "issued_at": { "$ref": "#/$defs/timestamp" },
+    "automatic": { "const": false }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._:-]{0,127}$"
+    },
+    "opaque": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["audience", "resource", "action", "purpose", "channel"],
+      "properties": {
+        "audience": { "$ref": "#/$defs/identifier" },
+        "resource": { "$ref": "#/$defs/opaque" },
+        "action": {
+          "enum": ["quarantine", "restrict-egress", "revoke-access", "restore"]
+        },
+        "purpose": { "$ref": "#/$defs/identifier" },
+        "channel": {
+          "enum": ["hatter-interactive", "emergency-console", "service-automation"]
+        }
+      }
+    }
+  }
+}

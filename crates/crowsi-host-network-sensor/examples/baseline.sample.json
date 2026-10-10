@@ -1,0 +1,24 @@
+{
+  "schema": "crowsi://network/host-network-baseline/v1",
+  "baseline_id": "sample-local-host",
+  "external_actions": false,
+  "signal_trust": "unsigned-local",
+  "expected_listeners": [
+    {
+      "protocol": "tcp",
+      "family": "ipv4",
+      "port": 8443,
+      "bind_scope": "wildcard"
+    },
+    {
+      "protocol": "udp",
+      "family": "ipv6",
+      "port": 5353,
+      "bind_scope": "loopback"
+    }
+  ],
+  "expected_default_routes": {
+    "ipv4": "present",
+    "ipv6": "absent"
+  }
+}

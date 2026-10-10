@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://network/host-network-finding/v1",
+  "title": "Crowsi host network finding v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "code",
+    "listener",
+    "route_family",
+    "expected_route",
+    "observed_route"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://network/host-network-finding/v1" },
+    "code": {
+      "enum": [
+        "unexpected-listener",
+        "expected-listener-missing",
+        "default-route-changed",
+        "source-unavailable",
+        "source-parse-failure"
+      ]
+    },
+    "listener": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/listener" }
+      ]
+    },
+    "route_family": {
+      "type": ["string", "null"],
+      "enum": ["ipv4", "ipv6", null]
+    },
+    "expected_route": {
+      "type": ["string", "null"],
+      "enum": ["present", "absent", null]
+    },
+    "observed_route": {
+      "type": ["string", "null"],
+      "enum": ["present", "absent", null]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "code": {
+            "enum": ["unexpected-listener", "expected-listener-missing"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "listener": { "$ref": "#/$defs/listener" },
+          "route_family": { "const": null },
+          "expected_route": { "const": null },
+          "observed_route": { "const": null }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "code": { "const": "default-route-changed" } }
+      },
+      "then": {
+        "properties": {
+          "listener": { "const": null },
+          "route_family": { "enum": ["ipv4", "ipv6"] },
+          "expected_route": { "enum": ["present", "absent"] },
+          "observed_route": { "enum": ["present", "absent"] }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "expected_route": { "const": "present" },
+              "observed_route": { "const": "absent" }
+            }
+          },
+          {
+            "properties": {
+              "expected_route": { "const": "absent" },
+              "observed_route": { "const": "present" }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "code": {
+            "enum": ["source-unavailable", "source-parse-failure"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "listener": { "const": null },
+          "route_family": { "const": null },
+          "expected_route": { "const": null },
+          "observed_route": { "const": null }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "listener": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol", "family", "port", "bind_scope"],
+      "properties": {
+        "protocol": { "enum": ["tcp", "udp"] },
+        "family": { "enum": ["ipv4", "ipv6"] },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "bind_scope": { "enum": ["loopback", "specific", "wildcard"] }
+      }
+    }
+  }
+}

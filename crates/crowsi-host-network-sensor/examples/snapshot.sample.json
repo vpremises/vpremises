@@ -1,0 +1,26 @@
+{
+  "schema": "crowsi://network/host-network-snapshot/v1",
+  "generated_at": "2026-08-01T00:00:00.000Z",
+  "external_actions": false,
+  "signal_trust": "unsigned-local",
+  "status": "observed",
+  "listeners": [
+    {
+      "protocol": "tcp",
+      "family": "ipv4",
+      "port": 8443,
+      "bind_scope": "wildcard"
+    },
+    {
+      "protocol": "udp",
+      "family": "ipv6",
+      "port": 5353,
+      "bind_scope": "loopback"
+    }
+  ],
+  "default_routes": {
+    "ipv4": "present",
+    "ipv6": "absent"
+  },
+  "findings": []
+}

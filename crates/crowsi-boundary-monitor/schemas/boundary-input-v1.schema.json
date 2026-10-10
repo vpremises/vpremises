@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://network/boundary-input/v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "generated_at", "external_actions", "environments"],
+  "properties": {
+    "schema": { "const": "crowsi://network/boundary-input/v1" },
+    "generated_at": { "type": "string", "minLength": 1 },
+    "external_actions": { "const": false },
+    "environments": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": { "$ref": "#/$defs/environment" }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$" },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "label",
+        "provider",
+        "source",
+        "status",
+        "isolation_mode",
+        "expected_isolation_mode",
+        "project_count",
+        "network_count",
+        "instance_count",
+        "public_ingress",
+        "management_endpoint_exposed"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "provider": { "$ref": "#/$defs/id" },
+        "source": { "$ref": "#/$defs/id" },
+        "status": { "$ref": "#/$defs/id" },
+        "isolation_mode": { "$ref": "#/$defs/id" },
+        "expected_isolation_mode": { "$ref": "#/$defs/id" },
+        "project_count": { "type": "integer", "minimum": 0 },
+        "network_count": { "type": "integer", "minimum": 0 },
+        "instance_count": { "type": "integer", "minimum": 0 },
+        "public_ingress": { "type": "boolean" },
+        "management_endpoint_exposed": { "type": "boolean" }
+      }
+    }
+  }
+}

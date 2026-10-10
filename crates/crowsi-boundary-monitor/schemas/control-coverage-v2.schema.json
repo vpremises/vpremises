@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://network/control-coverage/v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "generated_at_epoch_s",
+    "external_actions",
+    "assets"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://network/control-coverage/v2" },
+    "generated_at_epoch_s": { "type": "integer", "minimum": 1 },
+    "external_actions": { "const": false },
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1024,
+      "items": { "$ref": "#/$defs/asset" }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"
+    },
+    "ttl": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2592000
+    },
+    "asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "authority",
+        "sensor_status",
+        "observed_at_epoch_s",
+        "observation_ttl_s",
+        "enforcer_status",
+        "supported_actions",
+        "lifeline_status",
+        "last_drill_at_epoch_s",
+        "drill_ttl_s"
+      ],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "authority": { "enum": ["manage", "observe-only", "none"] },
+        "sensor_status": { "enum": ["connected", "degraded", "unknown"] },
+        "observed_at_epoch_s": { "type": "integer", "minimum": 0 },
+        "observation_ttl_s": { "$ref": "#/$defs/ttl" },
+        "enforcer_status": { "enum": ["ready", "degraded", "absent"] },
+        "supported_actions": {
+          "type": "array",
+          "uniqueItems": true,
+          "maxItems": 4,
+          "items": {
+            "enum": [
+              "revoke-credentials",
+              "quarantine",
+              "verify-isolation",
+              "restore"
+            ]
+          }
+        },
+        "lifeline_status": { "enum": ["verified", "unknown", "absent"] },
+        "last_drill_at_epoch_s": {
+          "oneOf": [
+            { "type": "integer", "minimum": 1 },
+            { "type": "null" }
+          ]
+        },
+        "drill_ttl_s": { "$ref": "#/$defs/ttl" }
+      }
+    }
+  }
+}

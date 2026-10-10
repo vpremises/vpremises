@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://incident/command-release/v1",
+  "title": "Crowsi Authenticated Command Release v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "command",
+    "command_digest",
+    "checkpoint",
+    "anchor"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://incident/command-release/v1" },
+    "command": { "$ref": "crowsi://incident/command/v1" },
+    "command_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "checkpoint": {
+      "$ref": "crowsi://incident/coordinator-checkpoint/v1"
+    },
+    "anchor": { "$ref": "crowsi://incident/monotonic-anchor/v1" }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "crowsi://network/control-coverage/v2",
+  "generated_at_epoch_s": 1000,
+  "external_actions": false,
+  "assets": [
+    {
+      "id": "local-incus",
+      "authority": "manage",
+      "sensor_status": "connected",
+      "observed_at_epoch_s": 990,
+      "observation_ttl_s": 60,
+      "enforcer_status": "ready",
+      "supported_actions": [
+        "revoke-credentials",
+        "quarantine",
+        "verify-isolation",
+        "restore"
+      ],
+      "lifeline_status": "verified",
+      "last_drill_at_epoch_s": 900,
+      "drill_ttl_s": 86400
+    }
+  ]
+}
