@@ -1,0 +1,48 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  native:
+    name: repository-policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      CARGO_INCREMENTAL: '0'
+      CARGO_BUILD_JOBS: '2'
+      CARGO_PROFILE_DEV_DEBUG: '0'
+      CARGO_PROFILE_TEST_DEBUG: '0'
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - name: Prepare pinned Linux toolchain
+        run: |
+          echo "CARGO_TARGET_DIR=$RUNNER_TEMP/cargo-target" >> "$GITHUB_ENV"
+          rustup show active-toolchain
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Lint all targets
+        run: cargo clippy --locked --all-targets -- -D warnings
+      - name: Test behavior
+        run: cargo test --locked --all-targets
+      - name: Check OSS source policy
+        run: cargo run --locked --example check-repository
+      - name: Install pinned RustSec audit CLI
+        run: |
+          cargo install cargo-audit --version 0.22.2 --locked --no-default-features --root "$RUNNER_TEMP/audit-tools"
+          echo "CARGO_AUDIT_BIN=$RUNNER_TEMP/audit-tools/bin/cargo-audit" >> "$GITHUB_ENV"
+      - name: Audit main lockfile against current RustSec advisories
+        run: '"$CARGO_AUDIT_BIN" audit --deny warnings'
+      - name: Build, package and verify standalone executable
+        run: bash scripts/package.sh
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: native-x86_64-unknown-linux-gnu
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14

@@ -1,11 +1,15 @@
 //! Contract tests bind expected context and keep request/report objects closed.
 
+#[cfg(target_os = "linux")]
 use crate::support::{acquire, daily_report, report_request, TempDirectory};
+#[cfg(target_os = "linux")]
 use std::fs;
 use vpremises::{
-    MountedSharePointReportRequest, ReportClassification, ReportRecordMode,
-    MOUNTED_SHAREPOINT_RECEIPT_SCHEMA, MOUNTED_SHAREPOINT_REQUEST_SCHEMA,
+    MountedSharePointReportRequest, MOUNTED_SHAREPOINT_RECEIPT_SCHEMA,
+    MOUNTED_SHAREPOINT_REQUEST_SCHEMA,
 };
+#[cfg(target_os = "linux")]
+use vpremises::{ReportClassification, ReportRecordMode};
 
 #[test]
 fn request_rejects_unknown_fields_and_schemas_are_pinned() {

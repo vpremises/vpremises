@@ -1,3 +1,5 @@
+#![cfg(target_os = "linux")]
+
 //! Semantic limits reject plausible-looking but unsafe report documents.
 
 use crate::support::{acquire, daily_report, report_request, TempDirectory};

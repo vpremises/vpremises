@@ -21,7 +21,10 @@ fn observer_root_resolves_from_its_configuration_package() {
     .expect("observer configuration");
     let config = load_observer_config(&config_path).expect("portable observer configuration");
     assert_eq!(config.roots.len(), 1);
-    assert_eq!(config.roots[0].path, observed);
+    assert_eq!(
+        config.roots[0].path,
+        observed.canonicalize().expect("canonical observed root")
+    );
     assert!(config.roots[0].path.is_absolute());
     fs::remove_dir_all(package).expect("cleanup");
 }
@@ -41,7 +44,10 @@ fn dot_observer_root_selects_only_the_configuration_package() {
     )
     .expect("observer configuration");
     let config = load_observer_config(&config_path).expect("package observer configuration");
-    assert_eq!(config.roots[0].path, package);
+    assert_eq!(
+        config.roots[0].path,
+        package.canonicalize().expect("canonical package root")
+    );
     fs::remove_dir_all(package).expect("cleanup");
 }
 

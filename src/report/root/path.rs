@@ -1,63 +1,14 @@
-//! The allowlisted root must stay beneath its explicit base with no symlinked prefix.
+//! Validate portable acquisition paths and reject linked ancestors.
 
 use crate::{
-    model::{ReportAcquisitionError, ReportAllowedRoot},
-    report::error,
-    MAX_RELATIVE_COMPONENTS, MAX_RELATIVE_FILE_BYTES,
+    model::ReportAcquisitionError, report::error, MAX_RELATIVE_COMPONENTS, MAX_RELATIVE_FILE_BYTES,
 };
 use std::{
     fs,
     path::{Component, Path, PathBuf},
 };
 
-pub(super) fn validate(
-    root: &ReportAllowedRoot,
-    resolved_base: &Path,
-) -> Result<PathBuf, ReportAcquisitionError> {
-    validate_base(resolved_base)?;
-    let relative_root = validate_relative(&root.relative_path)?;
-    reject_symlinked_prefix(resolved_base)?;
-    let canonical_base = resolved_base.canonicalize().map_err(|_| {
-        error::create(
-            "vpremises.report.root-base-unavailable",
-            "$.allowlisted_root.base",
-            "the resolved root base is unavailable",
-        )
-    })?;
-    let root_path = canonical_base.join(relative_root);
-    reject_symlinked_prefix(&root_path)?;
-    let metadata = fs::symlink_metadata(&root_path).map_err(|_| {
-        error::create(
-            "vpremises.report.root-unavailable",
-            "$.allowlisted_root.relative_path",
-            "the allowlisted root is unavailable",
-        )
-    })?;
-    if metadata.file_type().is_symlink() || !metadata.is_dir() {
-        return Err(error::create(
-            "vpremises.report.root-invalid",
-            "$.allowlisted_root.relative_path",
-            "the allowlisted root must be a regular directory and not a symbolic link",
-        ));
-    }
-    let canonical = root_path.canonicalize().map_err(|_| {
-        error::create(
-            "vpremises.report.root-unavailable",
-            "$.allowlisted_root.relative_path",
-            "the allowlisted root could not be resolved",
-        )
-    })?;
-    if canonical == Path::new("/") || !canonical.starts_with(&canonical_base) {
-        return Err(error::create(
-            "vpremises.report.root-invalid",
-            "$.allowlisted_root.relative_path",
-            "the allowlisted root must remain below its resolved base",
-        ));
-    }
-    Ok(canonical)
-}
-
-fn validate_base(path: &Path) -> Result<(), ReportAcquisitionError> {
+pub(super) fn validate_base(path: &Path) -> Result<(), ReportAcquisitionError> {
     if !path.is_absolute()
         || path == Path::new("/")
         || path
@@ -73,7 +24,7 @@ fn validate_base(path: &Path) -> Result<(), ReportAcquisitionError> {
     Ok(())
 }
 
-fn validate_relative(path: &Path) -> Result<&Path, ReportAcquisitionError> {
+pub(super) fn validate_relative(path: &Path) -> Result<&Path, ReportAcquisitionError> {
     let count = path.components().count();
     let portable = path.to_str().is_some_and(|value| {
         value
@@ -99,7 +50,7 @@ fn validate_relative(path: &Path) -> Result<&Path, ReportAcquisitionError> {
     Ok(path)
 }
 
-fn reject_symlinked_prefix(path: &Path) -> Result<(), ReportAcquisitionError> {
+pub(super) fn reject_symlinked_prefix(path: &Path) -> Result<(), ReportAcquisitionError> {
     let mut current = PathBuf::from("/");
     for component in path.components() {
         if let Component::Normal(name) = component {

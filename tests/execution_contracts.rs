@@ -1,3 +1,5 @@
+//! Execution contracts bind operations to identity, revision and immutable evidence.
+
 use vpremises::{
     ExecutionControlKindV1, ExecutionControlRequestV1, ExecutionLeaseRequestV1, ExecutionLeaseV1,
     ExecutionOutcomeV1, ExecutionPlacementV1, ExecutionResultV1, ExecutionStateV1,

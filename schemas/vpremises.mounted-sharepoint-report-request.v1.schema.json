@@ -4,16 +4,7 @@
   "title": "vPremises mounted SharePoint report acquisition request v1",
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "schema",
-    "request_id",
-    "correlation_id",
-    "artifact_id",
-    "expected_report",
-    "allowlisted_root",
-    "relative_file",
-    "max_bytes"
-  ],
+  "required": ["schema","request_id","correlation_id","artifact_id","expected_report","allowlisted_root","relative_file","max_bytes"],
   "properties": {
     "schema": {
       "const": "vpremises://contracts/mounted-sharepoint-report-request/v1"
@@ -30,23 +21,10 @@
     "expected_report": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "record_mode",
-        "reporting_date",
-        "headquarters_id",
-        "department_id",
-        "reporting_team_id",
-        "owner_account_id",
-        "classification",
-        "customer_data"
-      ],
+      "required": ["record_mode","reporting_date","headquarters_id","department_id","reporting_team_id","owner_account_id","classification","customer_data"],
       "properties": {
         "record_mode": {
-          "enum": [
-            "simulation-seed",
-            "runtime",
-            "imported"
-          ]
+          "enum": ["simulation-seed","runtime","imported"]
         },
         "reporting_date": {
           "type": "string",
@@ -79,9 +57,7 @@
                 "const": true
               }
             },
-            "required": [
-              "customer_data"
-            ]
+            "required": ["customer_data"]
           },
           "then": {
             "properties": {
@@ -96,20 +72,13 @@
     "allowlisted_root": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "id",
-        "base",
-        "relative_path"
-      ],
+      "required": ["id","base","relative_path"],
       "properties": {
         "id": {
           "$ref": "#/$defs/identifier"
         },
         "base": {
-          "enum": [
-            "workspace-root",
-            "request-directory"
-          ]
+          "enum": ["workspace-root","request-directory"]
         },
         "relative_path": {
           "type": "string",
@@ -139,13 +108,7 @@
       "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"
     },
     "classification": {
-      "enum": [
-        "internal",
-        "internal-confidential",
-        "personal-confidential",
-        "restricted-sensitive",
-        "customer-confidential"
-      ]
+      "enum": ["internal","internal-confidential","personal-confidential","restricted-sensitive","customer-confidential"]
     }
   }
 }

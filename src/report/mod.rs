@@ -2,7 +2,7 @@
 
 mod document;
 mod error;
-mod open;
+pub(crate) mod open;
 mod path;
 mod receipt;
 mod request;

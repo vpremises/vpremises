@@ -1,5 +1,6 @@
 //! Traversal rechecks canonical ancestry and accounts entries without exposing their names.
 
+mod directory;
 mod totals;
 
 use crate::{
@@ -16,18 +17,17 @@ pub(super) fn root(
     local: &mut ObservationTotals,
 ) -> Result<(), Diagnostic> {
     totals::account(root, limits, global, local, EntryKind::Directory, 0, 0)?;
-    let mut pending = vec![(root.canonical_path.clone(), 0_u32)];
-    while let Some((directory, depth)) = pending.pop() {
-        let canonical = directory.canonicalize().map_err(|error| {
-            diagnostic::io(
-                "vpremises.scan.canonicalize-failed",
-                &root.id,
-                "observation",
-                &error,
-            )
-        })?;
-        require_beneath(root, &canonical)?;
-        let entries = fs::read_dir(&canonical).map_err(|error| {
+    let held = directory::root(&root.canonical_path).map_err(|_| {
+        diagnostic::create(
+            "vpremises.scan.root-open-failed",
+            Some(&root.id),
+            "observation",
+            "the selected directory could not be opened without following links",
+        )
+    })?;
+    let mut pending = vec![(held, 0_u32)];
+    while let Some((held, depth)) = pending.pop() {
+        let entries = fs::read_dir(directory::path(&held)).map_err(|error| {
             diagnostic::io(
                 "vpremises.scan.read-directory-failed",
                 &root.id,
@@ -64,7 +64,7 @@ fn inspect_entry(
     limits: &ObservationLimits,
     global: &mut ObservationTotals,
     local: &mut ObservationTotals,
-    pending: &mut Vec<(std::path::PathBuf, u32)>,
+    pending: &mut Vec<(std::fs::File, u32)>,
     path: &std::path::Path,
     depth: u32,
 ) -> Result<(), Diagnostic> {
@@ -85,19 +85,26 @@ fn inspect_entry(
         )
     })?;
     let file_type = metadata.file_type();
-    let (kind, bytes) = if file_type.is_symlink() {
+    let (kind, bytes) = if crate::path_security::is_link(&metadata) {
         (EntryKind::Symlink, 0)
     } else if file_type.is_dir() {
-        let canonical = path.canonicalize().map_err(|error| {
+        if pending.len() >= 256 {
+            return Err(diagnostic::create(
+                "vpremises.limit.open-directories-exceeded",
+                Some(&root.id),
+                "observation",
+                "the held directory descriptor limit was exceeded",
+            ));
+        }
+        let child = directory::child(path).map_err(|error| {
             diagnostic::io(
-                "vpremises.scan.canonicalize-failed",
+                "vpremises.scan.directory-open-failed",
                 &root.id,
                 "observation",
                 &error,
             )
         })?;
-        require_beneath(root, &canonical)?;
-        pending.push((canonical, depth));
+        pending.push((child, depth));
         (EntryKind::Directory, 0)
     } else if file_type.is_file() {
         (EntryKind::File, metadata.len())
@@ -105,17 +112,4 @@ fn inspect_entry(
         (EntryKind::Other, 0)
     };
     totals::account(root, limits, global, local, kind, depth, bytes)
-}
-
-fn require_beneath(root: &ValidatedRoot, canonical: &std::path::Path) -> Result<(), Diagnostic> {
-    if canonical.starts_with(&root.canonical_path) {
-        Ok(())
-    } else {
-        Err(diagnostic::create(
-            "vpremises.scan.boundary-escape",
-            Some(&root.id),
-            "observation",
-            "a traversed directory escaped its allowed root",
-        ))
-    }
 }

@@ -1,19 +1,27 @@
 //! Mounted-report contracts bind one expected artifact to one allowlisted local root.
 
 use serde::{Deserialize, Serialize};
-use std::{fmt, path::PathBuf};
+use std::path::PathBuf;
 
 /// Closed request binding one report to an expected organizational context.
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct MountedSharePointReportRequest {
+    /// Versioned contract URI.
     pub schema: String,
+    /// Opaque identity of this request.
     pub request_id: String,
+    /// Correlation id.
     pub correlation_id: String,
+    /// Artifact id.
     pub artifact_id: String,
+    /// Expected report.
     pub expected_report: ExpectedDepartmentDailyReport,
+    /// Allowlisted root.
     pub allowlisted_root: ReportAllowedRoot,
+    /// Relative file.
     pub relative_file: String,
+    /// Max bytes.
     pub max_bytes: u64,
 }
 
@@ -21,8 +29,11 @@ pub struct MountedSharePointReportRequest {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct ReportAllowedRoot {
+    /// Id.
     pub id: String,
+    /// Base.
     pub base: ReportRootBase,
+    /// Relative path.
     pub relative_path: PathBuf,
 }
 
@@ -30,7 +41,9 @@ pub struct ReportAllowedRoot {
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum ReportRootBase {
+    /// Resolve from a registered workspace root.
     WorkspaceRoot,
+    /// Resolve from the request document directory.
     RequestDirectory,
 }
 
@@ -38,13 +51,21 @@ pub enum ReportRootBase {
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct ExpectedDepartmentDailyReport {
+    /// Record mode.
     pub record_mode: ReportRecordMode,
+    /// Reporting date.
     pub reporting_date: String,
+    /// Headquarters id.
     pub headquarters_id: String,
+    /// Department id.
     pub department_id: String,
+    /// Reporting team id.
     pub reporting_team_id: String,
+    /// Owner account id.
     pub owner_account_id: String,
+    /// Classification.
     pub classification: ReportClassification,
+    /// Customer data.
     pub customer_data: bool,
 }
 
@@ -52,8 +73,11 @@ pub struct ExpectedDepartmentDailyReport {
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum ReportRecordMode {
+    /// Synthetic data used for verification.
     SimulationSeed,
+    /// Data produced by a live runtime.
     Runtime,
+    /// Data acquired from an external source.
     Imported,
 }
 
@@ -61,47 +85,14 @@ pub enum ReportRecordMode {
 #[derive(Debug, Clone, Copy, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum ReportClassification {
+    /// Information intended for internal use.
     Internal,
+    /// Confidential internal information.
     InternalConfidential,
+    /// Information containing protected personal data.
     PersonalConfidential,
+    /// Information requiring restricted handling.
     RestrictedSensitive,
+    /// Confidential customer information.
     CustomerConfidential,
 }
-
-/// Content-free receipt for exact validated report bytes.
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct MountedSharePointReportReceipt {
-    pub schema: &'static str,
-    pub request_id: String,
-    pub receipt_id: String,
-    pub correlation_id: String,
-    pub root_id: String,
-    pub artifact_id: String,
-    pub operational_report_id: String,
-    pub headquarters_id: String,
-    pub department_id: String,
-    pub reporting_team_id: String,
-    pub schema_id: &'static str,
-    pub media_type: &'static str,
-    pub size_bytes: u64,
-    pub digest_sha256: String,
-    pub classification: String,
-    pub customer_data: bool,
-    pub external_actions: bool,
-}
-
-/// Stable fail-closed acquisition error.
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub struct ReportAcquisitionError {
-    pub code: &'static str,
-    pub field: &'static str,
-    pub message: &'static str,
-}
-
-impl fmt::Display for ReportAcquisitionError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(formatter, "{}: {}", self.field, self.message)
-    }
-}
-
-impl std::error::Error for ReportAcquisitionError {}

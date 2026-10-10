@@ -1,3 +1,5 @@
+#![cfg(target_os = "linux")]
+
 //! Successful acquisition returns only deterministic artifact metadata.
 
 use crate::support::{acquire, daily_report, report_request, TempDirectory};

@@ -5,12 +5,15 @@ use std::{
     path::{Path, PathBuf},
     sync::atomic::{AtomicU64, Ordering},
 };
+#[cfg(target_os = "linux")]
 use vpremises::{
-    acquire_mounted_sharepoint_report, AllowedRoot, ExpectedDepartmentDailyReport,
-    MountedSharePointReportReceipt, MountedSharePointReportRequest, ObservationLimits,
-    ObservationPolicy, ObserverConfig, ReportAcquisitionError, ReportAllowedRoot,
-    ReportClassification, ReportRecordMode, ReportRootBase, CONFIG_SCHEMA_VERSION,
+    acquire_mounted_sharepoint_report, ExpectedDepartmentDailyReport,
+    MountedSharePointReportReceipt, MountedSharePointReportRequest, ReportAcquisitionError,
+    ReportAllowedRoot, ReportClassification, ReportRecordMode, ReportRootBase,
     MOUNTED_SHAREPOINT_REQUEST_SCHEMA,
+};
+use vpremises::{
+    AllowedRoot, ObservationLimits, ObservationPolicy, ObserverConfig, CONFIG_SCHEMA_VERSION,
 };
 
 static NEXT_TEMP: AtomicU64 = AtomicU64::new(0);
@@ -52,6 +55,7 @@ pub fn observer_config(path: &Path) -> ObserverConfig {
     }
 }
 
+#[cfg(target_os = "linux")]
 pub fn report_request(root: &Path, relative_file: &str) -> MountedSharePointReportRequest {
     MountedSharePointReportRequest {
         schema: MOUNTED_SHAREPOINT_REQUEST_SCHEMA.to_owned(),
@@ -78,6 +82,7 @@ pub fn report_request(root: &Path, relative_file: &str) -> MountedSharePointRepo
     }
 }
 
+#[cfg(target_os = "linux")]
 pub fn acquire(
     request: &MountedSharePointReportRequest,
     root: &Path,
@@ -85,6 +90,7 @@ pub fn acquire(
     acquire_mounted_sharepoint_report(request, root.parent().expect("root parent"))
 }
 
+#[cfg(target_os = "linux")]
 pub fn daily_report(summary: &str) -> String {
     include_str!("../../examples/fixtures/department-daily-report.json").replace(
         "Bounded fixture used to verify mounted report acquisition.",
