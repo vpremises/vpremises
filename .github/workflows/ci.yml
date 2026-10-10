@@ -27,9 +27,9 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
       - name: Lint all targets
-        run: cargo clippy --locked --all-targets -- -D warnings
+        run: cargo clippy --locked --workspace --all-targets -- -D warnings
       - name: Test behavior
-        run: cargo test --locked --all-targets
+        run: cargo test --locked --workspace --all-targets
       - name: Check OSS source policy
         run: cargo run --locked --example check-repository
       - name: Install pinned RustSec audit CLI

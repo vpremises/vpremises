@@ -55,6 +55,20 @@ while IFS=$'\t' read -r name repository revision; do
     mv "$manifest.next" "$manifest"
     rm -rf -- "$checkout"
 done < <(jq -r '.sources[]|[.name,.repository,.revision]|@tsv' "$sources")
+# Security collectors are built from this product's own reviewed workspace.
+for name in crowsi-host-network-sensor crowsi-boundary-monitor; do
+    cargo build --locked --release --target x86_64-unknown-linux-gnu --bin "$name"
+    install -m 0755 "$CARGO_TARGET_DIR/x86_64-unknown-linux-gnu/release/$name" "$stage/tools/$name"
+    notice="$stage/licenses/collectors/$name"
+    mkdir -p "$notice"
+    cp "crates/$name/LICENSE" "crates/$name/NOTICE" "$notice/"
+    hash=$(sha256sum "$stage/tools/$name" | cut -d ' ' -f1)
+    revision=$(git rev-parse HEAD)
+    jq --arg name "$name" --arg revision "$revision" --arg sha "$hash" \
+        '.tools[$name]={repository:"vpremises/vpremises-security",revision:$revision,sha256:$sha}' \
+        "$manifest" > "$manifest.next"
+    mv "$manifest.next" "$manifest"
+done
 hash=$(sha256sum "$stage/tools/gitleaks" | cut -d ' ' -f1)
 [[ "$hash" == "$(jq -r '.gitleaks.binary_sha256' "$sources")" ]] || exit 1
 printf '%s  %s\n' "$(jq -r '.gitleaks.archive_sha256' "$sources")" "$stage/engine.tgz" | sha256sum -c --strict

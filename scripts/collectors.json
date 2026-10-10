@@ -5,16 +5,6 @@
       "name": "zixcel-repository-security",
       "repository": "zixcel/zixcel-repository-security",
       "revision": "363b49958d4b76f8970b94577cc81ebd845098ba"
-    },
-    {
-      "name": "crowsi-host-network-sensor",
-      "repository": "crowsi-net/crowsi-host-network-sensor",
-      "revision": "f806716eed4a44b2eaa94cf772998c1d78e122e4"
-    },
-    {
-      "name": "crowsi-boundary-monitor",
-      "repository": "crowsi-net/crowsi-boundary-monitor",
-      "revision": "270c2e2f7fc48ab47d1fa0572429cdef9aace896"
     }
   ],
   "gitleaks": {

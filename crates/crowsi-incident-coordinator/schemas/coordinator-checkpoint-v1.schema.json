@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://incident/coordinator-checkpoint/v1",
+  "title": "Crowsi Authenticated Coordinator Checkpoint v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "checkpoint_id",
+    "jti",
+    "deployment_id",
+    "incident_id",
+    "trust_bundle_digest",
+    "trust_revision",
+    "sequence",
+    "previous_checkpoint_digest",
+    "state_digest",
+    "command_digests",
+    "issued_at",
+    "authority",
+    "signed"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://incident/coordinator-checkpoint/v1" },
+    "checkpoint_id": { "$ref": "#/$defs/identifier" },
+    "jti": { "$ref": "#/$defs/identifier" },
+    "deployment_id": { "$ref": "#/$defs/identifier" },
+    "incident_id": { "$ref": "#/$defs/identifier" },
+    "trust_bundle_digest": { "$ref": "#/$defs/digest" },
+    "trust_revision": { "type": "integer", "minimum": 1 },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "previous_checkpoint_digest": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/digest" }
+      ]
+    },
+    "state_digest": { "$ref": "#/$defs/digest" },
+    "command_digests": {
+      "type": "array",
+      "maxItems": 4096,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/digest" }
+    },
+    "issued_at": { "$ref": "#/$defs/timestamp" },
+    "authority": { "$ref": "#/$defs/identifier" },
+    "signed": { "$ref": "#/$defs/signed" }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._:-]{0,127}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "signed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "digest", "signature"],
+      "properties": {
+        "algorithm": { "const": "ed25519" },
+        "key_id": { "$ref": "#/$defs/identifier" },
+        "digest": { "$ref": "#/$defs/digest" },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      }
+    }
+  }
+}

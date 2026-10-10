@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://network/host-network-baseline/v1",
+  "title": "Crowsi host network baseline v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "baseline_id",
+    "external_actions",
+    "signal_trust",
+    "expected_listeners",
+    "expected_default_routes"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://network/host-network-baseline/v1" },
+    "baseline_id": { "$ref": "#/$defs/identifier" },
+    "external_actions": { "const": false },
+    "signal_trust": { "const": "unsigned-local" },
+    "expected_listeners": {
+      "type": "array",
+      "maxItems": 4096,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/listener" }
+    },
+    "expected_default_routes": { "$ref": "#/$defs/expectedRoutes" }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"
+    },
+    "listener": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol", "family", "port", "bind_scope"],
+      "properties": {
+        "protocol": { "enum": ["tcp", "udp"] },
+        "family": { "enum": ["ipv4", "ipv6"] },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "bind_scope": { "enum": ["loopback", "specific", "wildcard"] }
+      }
+    },
+    "expectedRoutes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ipv4", "ipv6"],
+      "properties": {
+        "ipv4": { "enum": ["present", "absent"] },
+        "ipv6": { "enum": ["present", "absent"] }
+      }
+    }
+  }
+}

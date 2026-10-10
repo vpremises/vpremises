@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://incident/coordinator-state/v1",
+  "title": "Crowsi Incident Coordinator Durable State v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "snapshot",
+    "seen_event_jtis",
+    "seen_receipt_jtis",
+    "reserved_authorization_jtis",
+    "used_approval_ids",
+    "seen_evidence_jtis",
+    "pending_outbox",
+    "pending_recovery",
+    "monitoring_evidence"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://incident/coordinator-state/v1" },
+    "snapshot": { "$ref": "#/$defs/snapshot" },
+    "seen_event_jtis": { "$ref": "#/$defs/identifiers" },
+    "seen_receipt_jtis": { "$ref": "#/$defs/identifiers" },
+    "reserved_authorization_jtis": { "$ref": "#/$defs/identifiers" },
+    "used_approval_ids": { "$ref": "#/$defs/identifiers" },
+    "seen_evidence_jtis": { "$ref": "#/$defs/identifiers" },
+    "pending_outbox": {
+      "type": "array",
+      "maxItems": 4096,
+      "items": { "$ref": "crowsi://incident/command/v1" }
+    },
+    "pending_recovery": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/recoveryApproval" }
+      ]
+    },
+    "monitoring_evidence": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "crowsi://incident/monitoring-evidence/v1" }
+      ]
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._:-]{0,127}$"
+    },
+    "opaque": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "nullableIdentifier": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/identifier" }
+      ]
+    },
+    "nullableTimestamp": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/timestamp" }
+      ]
+    },
+    "identifiers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/identifier" }
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "deployment_id",
+        "incident_owner_authority",
+        "trust_bundle_digest",
+        "trust_revision",
+        "incident_id",
+        "phase",
+        "isolation_epoch",
+        "restore_attempt",
+        "detected_at",
+        "last_event_at",
+        "trusted_time_watermark",
+        "recovery_approval_id",
+        "monitoring_started_at",
+        "monitoring_evidence_jti",
+        "targets"
+      ],
+      "properties": {
+        "deployment_id": { "$ref": "#/$defs/identifier" },
+        "incident_owner_authority": { "$ref": "#/$defs/identifier" },
+        "trust_bundle_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "trust_revision": { "type": "integer", "minimum": 1 },
+        "incident_id": { "$ref": "#/$defs/identifier" },
+        "phase": {
+          "enum": [
+            "detected",
+            "triage",
+            "containment-requested",
+            "contained",
+            "containment-partial",
+            "containment-failed",
+            "eradication",
+            "recovery-pending",
+            "recovery-authorized",
+            "restoring",
+            "restored",
+            "restore-partial",
+            "restore-failed",
+            "monitoring",
+            "closed"
+          ]
+        },
+        "isolation_epoch": { "type": "integer", "minimum": 0 },
+        "restore_attempt": { "type": "integer", "minimum": 0 },
+        "detected_at": { "$ref": "#/$defs/timestamp" },
+        "last_event_at": { "$ref": "#/$defs/timestamp" },
+        "trusted_time_watermark": { "$ref": "#/$defs/timestamp" },
+        "recovery_approval_id": { "$ref": "#/$defs/nullableIdentifier" },
+        "monitoring_started_at": { "$ref": "#/$defs/nullableTimestamp" },
+        "monitoring_evidence_jti": { "$ref": "#/$defs/nullableIdentifier" },
+        "targets": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 64,
+          "additionalProperties": { "$ref": "#/$defs/target" }
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_id",
+        "isolation_epoch",
+        "desired",
+        "observed",
+        "transaction",
+        "transaction_id",
+        "requirements",
+        "active_commands",
+        "receipts",
+        "verified_evidence"
+      ],
+      "properties": {
+        "target_id": { "$ref": "#/$defs/opaque" },
+        "isolation_epoch": { "type": "integer", "minimum": 0 },
+        "desired": { "enum": ["unchanged", "isolated", "restored"] },
+        "observed": {
+          "enum": ["unknown", "isolated", "restored", "partial", "failed"]
+        },
+        "transaction": {
+          "enum": ["idle", "pending", "verified", "partial", "failed"]
+        },
+        "transaction_id": { "$ref": "#/$defs/nullableIdentifier" },
+        "requirements": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "items": { "$ref": "#/$defs/requirement" }
+        },
+        "active_commands": {
+          "type": "object",
+          "additionalProperties": { "$ref": "crowsi://incident/command/v1" }
+        },
+        "receipts": {
+          "type": "object",
+          "additionalProperties": { "$ref": "crowsi://incident/receipt/v1" }
+        },
+        "verified_evidence": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/verifiedEvidence" }
+        }
+      }
+    },
+    "verifiedEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact", "verified_at"],
+      "properties": {
+        "artifact": {
+          "$ref": "crowsi://incident/independent-verification/v1"
+        },
+        "verified_at": { "$ref": "#/$defs/timestamp" }
+      }
+    },
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirement_id", "binding"],
+      "properties": {
+        "requirement_id": { "$ref": "#/$defs/identifier" },
+        "binding": { "$ref": "crowsi://incident/command/v1#/$defs/binding" }
+      }
+    },
+    "recoveryApproval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approval_id",
+        "approved_at",
+        "authorizations",
+        "recovery_authorizations"
+      ],
+      "properties": {
+        "approval_id": { "$ref": "#/$defs/identifier" },
+        "approved_at": { "$ref": "#/$defs/timestamp" },
+        "authorizations": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "items": { "$ref": "#/$defs/authorization" }
+        },
+        "recovery_authorizations": {
+          "type": "object",
+          "minProperties": 1,
+          "maxProperties": 256,
+          "additionalProperties": {
+            "$ref": "crowsi://control/recovery-authorization/v1"
+          }
+        }
+      }
+    },
+    "authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_id",
+        "requirement_id",
+        "current_revocation_epoch",
+        "identity",
+        "intent",
+        "decision",
+        "grant"
+      ],
+      "properties": {
+        "target_id": { "$ref": "#/$defs/opaque" },
+        "requirement_id": { "$ref": "#/$defs/identifier" },
+        "current_revocation_epoch": { "type": "integer", "minimum": 0 },
+        "identity": {
+          "$ref": "crowsi://control/verified-identity-context/v1"
+        },
+        "intent": { "$ref": "crowsi://control/security-intent/v1" },
+        "decision": { "$ref": "crowsi://control/policy-decision/v1" },
+        "grant": { "$ref": "crowsi://control/enforcement-grant/v1" }
+      }
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://network/control-coverage-snapshot/v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "generated_at_epoch_s",
+    "external_actions",
+    "overall_state",
+    "summary",
+    "assets"
+  ],
+  "properties": {
+    "schema": {
+      "const": "crowsi://network/control-coverage-snapshot/v2"
+    },
+    "generated_at_epoch_s": { "type": "integer", "minimum": 1 },
+    "external_actions": { "const": false },
+    "overall_state": {
+      "enum": ["controlled", "partial", "unknown", "unmanaged"]
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_count", "controlled_count", "gap_count"],
+      "properties": {
+        "asset_count": { "type": "integer", "minimum": 1 },
+        "controlled_count": { "type": "integer", "minimum": 0 },
+        "gap_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1024,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "state", "isolation_ready", "finding_codes"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"
+          },
+          "state": {
+            "enum": ["controlled", "partial", "unknown", "unmanaged"]
+          },
+          "isolation_ready": { "type": "boolean" },
+          "finding_codes": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9._-]{0,127}$"
+            }
+          }
+        }
+      }
+    }
+  }
+}

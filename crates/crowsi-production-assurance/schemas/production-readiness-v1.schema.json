@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://production/readiness/v1",
+  "title": "Crowsi production readiness evidence bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "security_domain",
+    "deployment_id",
+    "asset_id",
+    "assurance_context_digest_sha256",
+    "assurance_context",
+    "hardware-key-attestation",
+    "management-lifeline",
+    "release-provenance",
+    "sbom",
+    "isolation-drill",
+    "recovery-drill",
+    "independent-readback"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://production/readiness/v1" },
+    "security_domain": { "$ref": "#/$defs/id" },
+    "deployment_id": { "$ref": "#/$defs/id" },
+    "asset_id": { "$ref": "#/$defs/id" },
+    "assurance_context_digest_sha256": { "$ref": "#/$defs/sha256" },
+    "assurance_context": { "$ref": "#/$defs/context" },
+    "hardware-key-attestation": { "$ref": "#/$defs/evidence" },
+    "management-lifeline": { "$ref": "#/$defs/evidence" },
+    "release-provenance": { "$ref": "#/$defs/evidence" },
+    "sbom": { "$ref": "#/$defs/evidence" },
+    "isolation-drill": { "$ref": "#/$defs/evidence" },
+    "recovery-drill": { "$ref": "#/$defs/evidence" },
+    "independent-readback": { "$ref": "#/$defs/evidence" }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$"
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "hardware_key_attestation_id",
+        "hardware_key_attestation_digest_sha256",
+        "management_lifeline_id",
+        "management_lifeline_digest_sha256",
+        "release_id",
+        "release_digest_sha256",
+        "sbom_id",
+        "sbom_digest_sha256",
+        "command_id",
+        "command_digest_sha256",
+        "fence_epoch",
+        "isolation_drill_id",
+        "isolation_drill_digest_sha256",
+        "recovery_drill_id",
+        "recovery_drill_digest_sha256",
+        "readback_id",
+        "readback_digest_sha256"
+      ],
+      "properties": {
+        "schema": { "const": "crowsi://production/assurance-context/v1" },
+        "hardware_key_attestation_id": { "$ref": "#/$defs/id" },
+        "hardware_key_attestation_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "management_lifeline_id": { "$ref": "#/$defs/id" },
+        "management_lifeline_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "release_id": { "$ref": "#/$defs/id" },
+        "release_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "sbom_id": { "$ref": "#/$defs/id" },
+        "sbom_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "command_id": { "$ref": "#/$defs/id" },
+        "command_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "fence_epoch": { "type": "integer", "minimum": 1 },
+        "isolation_drill_id": { "$ref": "#/$defs/id" },
+        "isolation_drill_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "recovery_drill_id": { "$ref": "#/$defs/id" },
+        "recovery_drill_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "readback_id": { "$ref": "#/$defs/id" },
+        "readback_digest_sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "payload",
+        "signer_role",
+        "signer_key_id",
+        "algorithm",
+        "signature_base64"
+      ],
+      "properties": {
+        "payload": { "$ref": "#/$defs/payload" },
+        "signer_role": { "$ref": "#/$defs/id" },
+        "signer_key_id": { "$ref": "#/$defs/id" },
+        "algorithm": { "enum": ["ed25519", "ecdsa-p256-sha256-asn1"] },
+        "signature_base64": {
+          "type": "string",
+          "minLength": 40,
+          "maxLength": 684,
+          "pattern": "^[A-Za-z0-9+/]+$"
+        }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "kind",
+        "origin",
+        "security_domain",
+        "deployment_id",
+        "asset_id",
+        "assurance_context_digest_sha256",
+        "issued_at_epoch_s",
+        "expires_at_epoch_s",
+        "subject_digest_sha256",
+        "controls"
+      ],
+      "properties": {
+        "evidence_id": { "$ref": "#/$defs/id" },
+        "kind": {
+          "enum": [
+            "hardware-key-attestation",
+            "management-lifeline",
+            "release-provenance",
+            "sbom",
+            "isolation-drill",
+            "recovery-drill",
+            "independent-readback"
+          ]
+        },
+        "origin": { "enum": ["hardware", "attested-service", "simulation"] },
+        "security_domain": { "$ref": "#/$defs/id" },
+        "deployment_id": { "$ref": "#/$defs/id" },
+        "asset_id": { "$ref": "#/$defs/id" },
+        "assurance_context_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "issued_at_epoch_s": { "type": "integer", "minimum": 0 },
+        "expires_at_epoch_s": { "type": "integer", "minimum": 1 },
+        "subject_digest_sha256": { "$ref": "#/$defs/sha256" },
+        "controls": { "$ref": "#/$defs/controls" }
+      }
+    },
+    "controls": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assertions", "freshness_seconds"],
+      "properties": {
+        "assertions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "hardware-backed",
+              "non-exportable",
+              "role-scoped",
+              "attestation-chain-verified",
+              "outside-blast-radius",
+              "independent-channel",
+              "artifact-digest-verified",
+              "source-revision-bound",
+              "release-signature-verified",
+              "sbom-complete",
+              "sbom-digest-bound",
+              "dependency-review-passed",
+              "secret-scan-passed",
+              "drill-passed",
+              "drill-evidence-immutable",
+              "target-state-verified",
+              "independent-recovery-authority",
+              "independent-vantage",
+              "readback-signature-verified"
+            ]
+          }
+        },
+        "freshness_seconds": { "type": "integer", "minimum": 0, "maximum": 30 }
+      }
+    }
+  }
+}

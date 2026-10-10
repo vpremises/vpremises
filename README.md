@@ -59,3 +59,23 @@ compatible with Ubuntu 24.04. Preserve license notices when redistributing.
 See [Security model and coverage](docs/security-model.md) before interpreting a
 passing audit as evidence. It documents trust boundaries, implemented controls,
 resource limits and checks requiring separate tools or evidence.
+
+
+## Security observation workspace
+
+The local endpoint CLI owns the network sensor and isolation evaluator under
+`crates/`; the release bundle builds these collectors from this same source.
+Incident coordination and production-assurance components evaluate supplied
+evidence. They do not provision services or certify unobserved environments.
+
+Sample a Linux network snapshot and an explicit boundary evaluation:
+
+```sh
+cargo run --locked -p crowsi-host-network-sensor -- observe
+cargo run --locked -p crowsi-boundary-monitor -- sample
+cargo test --locked --workspace --all-targets
+```
+
+Use the resulting metadata with an explicit baseline in the mounted-directory
+audit configuration. Keep missing or stale evidence as incomplete. Credential
+storage and policy enforcement belong to separate credential/control products.

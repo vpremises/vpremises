@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crowsi://network/host-network-snapshot/v1",
+  "title": "Crowsi host network snapshot v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "generated_at",
+    "external_actions",
+    "signal_trust",
+    "status",
+    "listeners",
+    "default_routes",
+    "findings"
+  ],
+  "properties": {
+    "schema": { "const": "crowsi://network/host-network-snapshot/v1" },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\\\.[0-9]{3}Z$"
+    },
+    "external_actions": { "const": false },
+    "signal_trust": { "const": "unsigned-local" },
+    "status": { "enum": ["observed", "drifted", "unknown"] },
+    "listeners": {
+      "type": "array",
+      "maxItems": 4096,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/listener" }
+    },
+    "default_routes": { "$ref": "#/$defs/routes" },
+    "findings": {
+      "type": "array",
+      "maxItems": 8194,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/finding" }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "observed" } } },
+      "then": {
+        "properties": {
+          "default_routes": { "$ref": "#/$defs/knownRoutes" },
+          "findings": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "drifted" } } },
+      "then": {
+        "properties": {
+          "default_routes": { "$ref": "#/$defs/knownRoutes" },
+          "findings": {
+            "minItems": 1,
+            "items": {
+              "allOf": [
+                { "$ref": "#/$defs/finding" },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "unexpected-listener",
+                        "expected-listener-missing",
+                        "default-route-changed"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "unknown" } } },
+      "then": {
+        "properties": {
+          "listeners": { "maxItems": 0 },
+          "default_routes": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["ipv4", "ipv6"],
+            "properties": {
+              "ipv4": { "const": "unknown" },
+              "ipv6": { "const": "unknown" }
+            }
+          },
+          "findings": {
+            "minItems": 1,
+            "items": {
+              "allOf": [
+                { "$ref": "#/$defs/finding" },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": ["source-unavailable", "source-parse-failure"]
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "listener": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["protocol", "family", "port", "bind_scope"],
+      "properties": {
+        "protocol": { "enum": ["tcp", "udp"] },
+        "family": { "enum": ["ipv4", "ipv6"] },
+        "port": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "bind_scope": { "enum": ["loopback", "specific", "wildcard"] }
+      }
+    },
+    "routes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ipv4", "ipv6"],
+      "properties": {
+        "ipv4": { "enum": ["present", "absent", "unknown"] },
+        "ipv6": { "enum": ["present", "absent", "unknown"] }
+      }
+    },
+    "knownRoutes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ipv4", "ipv6"],
+      "properties": {
+        "ipv4": { "enum": ["present", "absent"] },
+        "ipv6": { "enum": ["present", "absent"] }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "code",
+        "listener",
+        "route_family",
+        "expected_route",
+        "observed_route"
+      ],
+      "properties": {
+        "schema": { "const": "crowsi://network/host-network-finding/v1" },
+        "code": {
+          "enum": [
+            "unexpected-listener",
+            "expected-listener-missing",
+            "default-route-changed",
+            "source-unavailable",
+            "source-parse-failure"
+          ]
+        },
+        "listener": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/listener" }
+          ]
+        },
+        "route_family": {
+          "type": ["string", "null"],
+          "enum": ["ipv4", "ipv6", null]
+        },
+        "expected_route": {
+          "type": ["string", "null"],
+          "enum": ["present", "absent", null]
+        },
+        "observed_route": {
+          "type": ["string", "null"],
+          "enum": ["present", "absent", null]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "code": {
+                "enum": ["unexpected-listener", "expected-listener-missing"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "listener": { "$ref": "#/$defs/listener" },
+              "route_family": { "const": null },
+              "expected_route": { "const": null },
+              "observed_route": { "const": null }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "code": { "const": "default-route-changed" } }
+          },
+          "then": {
+            "properties": {
+              "listener": { "const": null },
+              "route_family": { "enum": ["ipv4", "ipv6"] },
+              "expected_route": { "enum": ["present", "absent"] },
+              "observed_route": { "enum": ["present", "absent"] }
+            },
+            "oneOf": [
+              {
+                "properties": {
+                  "expected_route": { "const": "present" },
+                  "observed_route": { "const": "absent" }
+                }
+              },
+              {
+                "properties": {
+                  "expected_route": { "const": "absent" },
+                  "observed_route": { "const": "present" }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "code": {
+                "enum": ["source-unavailable", "source-parse-failure"]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "listener": { "const": null },
+              "route_family": { "const": null },
+              "expected_route": { "const": null },
+              "observed_route": { "const": null }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

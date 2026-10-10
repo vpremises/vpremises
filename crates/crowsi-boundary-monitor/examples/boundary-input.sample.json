@@ -1,0 +1,49 @@
+{
+  "schema": "crowsi://network/boundary-input/v1",
+  "generated_at": "2026-07-27T04:00:00.000Z",
+  "external_actions": false,
+  "environments": [
+    {
+      "id": "coela-local-control",
+      "label": "Coela local control",
+      "provider": "linux",
+      "source": "ecosystem-smoke",
+      "status": "observed",
+      "isolation_mode": "linux-user-network-namespace",
+      "expected_isolation_mode": "linux-user-network-namespace",
+      "project_count": 1,
+      "network_count": 1,
+      "instance_count": 19,
+      "public_ingress": false,
+      "management_endpoint_exposed": false
+    },
+    {
+      "id": "incus-development",
+      "label": "Incus development",
+      "provider": "incus",
+      "source": "incus-isolation-adapter",
+      "status": "observed",
+      "isolation_mode": "incus-project-network-profile",
+      "expected_isolation_mode": "incus-project-network-profile",
+      "project_count": 2,
+      "network_count": 2,
+      "instance_count": 4,
+      "public_ingress": false,
+      "management_endpoint_exposed": false
+    },
+    {
+      "id": "incus-production",
+      "label": "Incus production",
+      "provider": "incus",
+      "source": "incus-isolation-adapter",
+      "status": "not-connected",
+      "isolation_mode": "unobserved",
+      "expected_isolation_mode": "incus-project-network-profile",
+      "project_count": 0,
+      "network_count": 0,
+      "instance_count": 0,
+      "public_ingress": false,
+      "management_endpoint_exposed": false
+    }
+  ]
+}
