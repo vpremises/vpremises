@@ -828,6 +828,7 @@ version = "0.1.2"
 dependencies = [
  "flate2",
  "globset",
+ "semver",
  "serde",
  "serde_json",
  "sha2",
