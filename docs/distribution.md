@@ -9,7 +9,7 @@ Gitleaks engine. No compiler, Git checkout or runtime download is needed for
 directory auditing. JSON setup scripts use the standard Ubuntu `jq` utility.
 
 ```sh
-version=0.1.2
+version=0.1.3
 archive=vpremises-security-${version}-x86_64-unknown-linux-gnu.zip
 printf '%s  %s\n' "$(tr -d '\r\n' < "$archive.sha256")" "$archive" | sha256sum --check --strict
 unzip "$archive" -d vpremises-security
@@ -46,3 +46,5 @@ This verifies tool operation, not the runner's overall security or real host
 isolation. Review the downloaded release's checksum and `SHA256SUMS`, then run
 `doctor`, `init` and an explicitly configured audit on the deployment machine.
 Reports and private settings must stay outside the extracted bundle.
+
+An authorized `coela-oss` operator may also request publication on a repository PR with `/release v<version> <exact-main-sha>`. The request must select the current main source and its declared package version. The promotion workflow reruns the complete product/bundle CI, creates an immutable tag on that exact source using the short-lived workflow token, and invokes the same verified release script. Existing tags on another source and existing releases are rejected. Local registry or GitHub credentials are not needed.
