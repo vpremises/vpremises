@@ -5,12 +5,13 @@ umask 077
 : "${RUNNER_TEMP:?Missing ephemeral runner directory}"
 : "${GH_TOKEN:?Missing workflow token}"
 : "${GITHUB_REPOSITORY:?Missing repository identity}"
-: "${GITHUB_REF_NAME:?Missing release tag}"
+: "${RELEASE_TAG:=${GITHUB_REF_NAME:?Missing release tag}}"
 : "${GITHUB_SHA:?Missing source revision}"
-[[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
+[[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || exit 1
 version=$(sed -n 's/^version = "\([0-9]*\.[0-9]*\.[0-9]*\)"$/\1/p' Cargo.toml)
-[[ "$GITHUB_REF_NAME" == "v$version" ]] || exit 1
+[[ "$RELEASE_TAG" == "v$version" ]] || exit 1
 [[ "$(git rev-parse HEAD)" == "$GITHUB_SHA" ]] || exit 1
+[[ "$(git rev-parse "$RELEASE_TAG^{commit}")" == "$GITHUB_SHA" ]] || exit 1
 git merge-base --is-ancestor "$GITHUB_SHA" origin/main
 assets=()
 for target in x86_64-unknown-linux-gnu; do
@@ -32,12 +33,12 @@ assets+=("$engine" "$engine.sha256")
 # Refuse to modify an existing release, including a partially uploaded draft.
 error_file=$(mktemp "$RUNNER_TEMP/vpremises-release.XXXXXX")
 trap 'unlink -- "$error_file"' EXIT
-if gh api "repos/$GITHUB_REPOSITORY/releases/tags/$GITHUB_REF_NAME" > /dev/null 2> "$error_file"; then
+if gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" > /dev/null 2> "$error_file"; then
     printf '%s\n' 'Release already exists; review it manually' >&2
     exit 1
 fi
 grep -Fq 'HTTP 404' "$error_file" || exit 1
 notes="Standalone Linux/WSL executable. Download the matching ZIP and SHA-256 file, verify the digest, and extract the bundle. No package registry, container runtime, or Rust installation is required. Source revision: $GITHUB_SHA."
-gh release create "$GITHUB_REF_NAME" "${assets[@]}" \
+gh release create "$RELEASE_TAG" "${assets[@]}" \
     --repo "$GITHUB_REPOSITORY" --verify-tag \
     --title "vpremises-security $version" --notes "$notes"

@@ -24,6 +24,8 @@ jobs:
         run: |
           echo "CARGO_TARGET_DIR=$RUNNER_TEMP/cargo-target" >> "$GITHUB_ENV"
           rustup show active-toolchain
+      - name: Verify authorized release request boundaries
+        run: node --test scripts/release-request.test.mjs
       - name: Check formatting
         run: cargo fmt --all -- --check
       - name: Lint all targets
