@@ -11,6 +11,7 @@ mod exclusions;
 mod git;
 mod manifests;
 mod npm_manifest;
+mod npm_specifier;
 mod package;
 mod package_manifest;
 mod paths;

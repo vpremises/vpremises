@@ -1,5 +1,5 @@
 //! npm publication requires explicit registry routes and packaged entry points.
-use super::OssReport;
+use super::{npm_specifier::registry_specifier, OssReport};
 use serde_json::Value;
 
 pub(super) fn npm(value: &Value, report: &mut OssReport) {
@@ -26,20 +26,7 @@ pub(super) fn npm(value: &Value, report: &mut OssReport) {
             continue;
         };
         for (name, v) in object {
-            if v.as_str().is_none_or(|s| {
-                [
-                    "file:",
-                    "link:",
-                    "workspace:",
-                    "git",
-                    "http:",
-                    "https:",
-                    "/",
-                    ".",
-                ]
-                .iter()
-                .any(|p| s.starts_with(p))
-            }) {
+            if v.as_str().is_none_or(|s| !registry_specifier(s)) {
                 report.finding("npm-nonregistry-dependency", &format!("{section}/{name}"));
             }
         }

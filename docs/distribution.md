@@ -9,7 +9,8 @@ Gitleaks engine. No compiler, Git checkout or runtime download is needed for
 directory auditing. JSON setup scripts use the standard Ubuntu `jq` utility.
 
 ```sh
-archive=vpremises-security-0.1.0-x86_64-unknown-linux-gnu.zip
+version=0.1.2
+archive=vpremises-security-${version}-x86_64-unknown-linux-gnu.zip
 printf '%s  %s\n' "$(tr -d '\r\n' < "$archive.sha256")" "$archive" | sha256sum --check --strict
 unzip "$archive" -d vpremises-security
 cd vpremises-security

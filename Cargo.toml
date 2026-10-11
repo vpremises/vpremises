@@ -68,6 +68,7 @@ external_actions = false
 follow_symlinks = false
 
 [dependencies]
+semver = "1.0.28"
 flate2 = "1.1.10"
 globset = "0.4.20"
 serde = { version = "1", features = ["derive"] }
