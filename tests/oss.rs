@@ -5,6 +5,8 @@ mod archives;
 mod content;
 #[path = "oss/exclusions.rs"]
 mod exclusions;
+#[path = "oss/npm_routing.rs"]
+mod npm_routing;
 #[path = "oss/packages.rs"]
 mod packages;
 #[path = "oss/repository.rs"]
